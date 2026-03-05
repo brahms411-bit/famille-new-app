@@ -1,541 +1,746 @@
-# Rôle — Équipe de Développement (DEV_TEAM)
+# Équipe — Development Team (DEV_TEAM)
 
 > **Système** : AI Development Team  
-> **Agents** : Developer(s) + QA Engineer  
-> **Version** : 1.0  
+> **Agents** : Frontend Dev · Backend Dev · Database Dev · Testing Dev · Infrastructure Dev  
+> **Version** : 2.0  
 > **Date** : 2026-03-04  
-> **Projet** : FoyerApp — mobile-first PWA (Next.js + Supabase)  
+> **Projet** : FoyerApp — mobile-first PWA  
+> **Stack** : Next.js · TypeScript · TailwindCSS · Supabase · Vercel  
 > **Référence skills** : `nextjs_development.md` · `supabase_database.md` · `testing_quality.md`
 
 ---
 
 ## Table des matières
 
-1. [Mission du rôle](#1-mission-du-rôle)
-2. [Responsabilités](#2-responsabilités)
-3. [Inputs](#3-inputs)
-4. [Outputs](#4-outputs)
-5. [Skills utilisés](#5-skills-utilisés)
-6. [Règles du rôle](#6-règles-du-rôle)
+1. [Mission de l'équipe](#1-mission-de-léquipe)
+2. [Organisation de l'équipe](#2-organisation-de-léquipe)
+3. [Responsabilités de chaque développeur](#3-responsabilités-de-chaque-développeur)
+4. [Inputs](#4-inputs)
+5. [Outputs](#5-outputs)
+6. [Skills utilisés](#6-skills-utilisés)
+7. [Règles de collaboration](#7-règles-de-collaboration)
 
 ---
 
-## 1. Mission du rôle
+## 1. Mission de l'équipe
 
-L'équipe de développement est responsable de **transformer les User Stories en code fonctionnel, testé et déployable**. Elle est composée de deux rôles complémentaires — Developer et QA Engineer — qui travaillent en tandem sur chaque story du sprint.
+La DEV_TEAM est responsable de **transformer les User Stories en code fonctionnel, sécurisé et déployable** sur la stack Next.js + Supabase + Vercel. Elle est composée de cinq agents IA spécialisés qui travaillent en parallèle sur des couches distinctes de l'application, et se synchronisent à des points de coordination définis.
 
 Sa mission tient en une phrase :
 
-> **Implémenter les User Stories de façon correcte, sécurisée et maintenable — en respectant la stack, les standards de qualité et l'isolation multi-tenant.**
+> **Livrer chaque User Story de façon correcte, sécurisée et maintenable — chaque agent dans son domaine, en coordination explicite aux interfaces.**
 
-Dans un système AI Scrum, l'équipe de développement est composée d'**agents IA autonomes** capables de :
-- Lire une User Story et sa fiche écran UX pour en déduire les tâches d'implémentation
-- Produire du code Next.js + TypeScript + TailwindCSS conforme aux conventions définies
-- Écrire et exécuter des tests automatisés couvrant les cas nominaux et les cas d'erreur
-- Vérifier l'isolation multi-tenant (RLS Supabase) sur chaque story manipulant des données
-- Signaler les ambiguïtés techniques au PO ou à l'UX Designer avant de coder, pas après
+Chaque agent est **autonome dans son domaine et dépendant aux frontières** : le Frontend Developer attend le contrat d'API du Backend, le Backend attend le schéma du Database Developer, l'Infrastructure valide que tout se déploie ensemble. La coordination n'est pas optionnelle — elle est structurée et documentée.
 
-### 1.1 Composition de l'équipe
+### Principe directeur de l'équipe
 
-```
-┌──────────────────────────────────────────────────────────┐
-│                     DEV_TEAM                             │
-│                                                          │
-│   DEVELOPER                     QA ENGINEER             │
-│   ──────────                    ────────────             │
-│   Implémente les composants      Écrit les tests         │
-│   Crée les API Routes            Valide les CA           │
-│   Gère le schéma DB              Rédige les rapports     │
-│   Ouvre les Pull Requests        de validation           │
-│                                  Remonte les bugs        │
-│                                                          │
-│         ← Communication directe en cours de sprint →    │
-└──────────────────────────────────────────────────────────┘
-```
-
-Le Developer et le QA travaillent sur la même story simultanément — le QA prépare les tests pendant que le Developer implémente.
+> *Un code correct est un code que l'agent suivant peut lire, modifier et tester sans demander d'explication.*
 
 ---
 
-## 2. Responsabilités
+## 2. Organisation de l'équipe
 
-### 2.1 Implémentation des User Stories (Developer)
+### 2.1 Composition et spécialités
 
-Le Developer traduit chaque story assignée en code, en suivant la fiche écran UX et les tâches techniques du backlog.
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                          DEV_TEAM                                   │
+│                                                                     │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐             │
+│  │   FRONTEND   │  │   BACKEND    │  │   DATABASE   │             │
+│  │   Developer  │  │   Developer  │  │   Developer  │             │
+│  │              │  │              │  │              │             │
+│  │ Composants   │  │ API Routes   │  │ Schéma SQL   │             │
+│  │ Hooks React  │  │ Validation   │  │ Migrations   │             │
+│  │ TailwindCSS  │  │ Auth logic   │  │ RLS policies │             │
+│  │ UX → Code    │  │ Zod schemas  │  │ Types TS     │             │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘             │
+│         │                 │                  │                     │
+│         └────────┬────────┘                  │                     │
+│                  │         ┌─────────────────┘                     │
+│                  ▼         ▼                                        │
+│          ┌───────────────────────┐  ┌──────────────┐              │
+│          │      TESTING          │  │    INFRA     │              │
+│          │      Developer        │  │   Developer  │              │
+│          │                       │  │              │              │
+│          │ Tests unitaires       │  │ Vercel config│              │
+│          │ Tests intégration     │  │ CI/CD        │              │
+│          │ Tests RLS             │  │ Env vars     │              │
+│          │ Rapports de validation│  │ Monitoring   │              │
+│          └───────────────────────┘  └──────────────┘              │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
-- Lire et comprendre les critères d'acceptation **avant** d'écrire la première ligne de code
-- Implémenter les composants React conformément à la fiche écran UX (layout 375px, états, comportements)
-- Créer les API Routes Next.js avec validation Zod, vérification auth, vérification d'appartenance au foyer
-- Appliquer les optimistic updates sur les actions fréquentes (cocher une tâche, cocher un article)
-- Respecter la structure de fichiers et les conventions de nommage définies dans `nextjs_development.md` §2.1 et §3.1
+### 2.2 Flux de travail sur une User Story
 
-### 2.2 Base de données et sécurité (Developer)
+Chaque story suit un flux en 5 phases avec des points de synchronisation obligatoires :
 
-Toute story qui crée ou modifie des données implique une responsabilité DB explicite.
+```
+PHASE 1 — Lecture & analyse (tous les agents, simultané)
+  ├── Frontend lit la fiche écran UX et liste les composants à créer
+  ├── Backend liste les API Routes nécessaires et leur contrat
+  ├── Database vérifie les tables et migrations nécessaires
+  ├── Testing prépare la stratégie de tests et les cas limites
+  └── Infra identifie les variables d'env ou configs nécessaires
 
-- Créer les migrations SQL versionnées pour toute modification de schéma (`supabase/migrations/`)
-- Vérifier que les RLS policies couvrent les opérations introduites par la story
-- Utiliser le client Supabase approprié selon le contexte — `client.ts` (browser) ou `server.ts` (API Routes)
-- Ne jamais exposer la `SERVICE_ROLE_KEY` dans un composant client — sans exception
-- Régénérer les types TypeScript (`supabase gen types typescript`) après toute migration
+        ↓ SYNC POINT A : contrat d'interface partagé
 
-### 2.3 Tests automatisés (Developer + QA)
+PHASE 2 — Implémentation parallèle
+  ├── Database crée les migrations + policies RLS
+  ├── Backend crée les API Routes (sur schéma Database)
+  ├── Frontend crée les composants (sur contrat API Backend)
+  ├── Testing écrit les tests unitaires (sur composants Frontend)
+  └── Infra configure l'environnement (vars, preview)
 
-Les tests ne sont pas optionnels. Une story sans tests n'est pas Done.
+        ↓ SYNC POINT B : intégration des couches
 
-**Developer** :
-- Écrire les tests unitaires sur les composants et hooks qu'il crée
-- Écrire les tests d'intégration sur les API Routes qu'il crée (cas nominal + auth + isolation)
-- S'assurer que `next build` passe sans erreur TypeScript ni ESLint avant d'ouvrir la PR
+PHASE 3 — Intégration et tests d'intégration
+  ├── Frontend connecte les composants aux vraies API Routes
+  ├── Backend vérifie les réponses attendues par le Frontend
+  ├── Testing exécute les tests d'intégration complets
+  └── Database vérifie que les policies RLS ne bloquent pas le nominatif
 
-**QA Engineer** :
-- Écrire les tests de validation des critères d'acceptation (cas nominaux + cas d'erreur + cas limites)
-- Vérifier l'isolation multi-tenant par simulation d'utilisateurs cross-foyer
+        ↓ SYNC POINT C : validation complète
+
+PHASE 4 — Validation finale
+  ├── Testing exécute la suite complète + tests d'isolation RLS
+  ├── Infra vérifie le déploiement en preview Vercel
+  └── Testing prononce "Ready for Review" ou liste les bugs
+
+        ↓ SYNC POINT D : PR ouverte, story en In Review
+
+PHASE 5 — Sprint Review
+  └── PO prononce Accepted ✅ ou Rejected ❌
+```
+
+### 2.3 Matrice de responsabilités (RACI)
+
+```
+R = Responsable   A = Approbateur   C = Consulté   I = Informé
+
+Tâche                            | FE  | BE  | DB  | TEST | INFRA
+─────────────────────────────────────────────────────────────────
+Composants React                 |  R  |  I  |  I  |  C   |  I
+Custom hooks                     |  R  |  C  |  I  |  C   |  I
+Contrat d'API (types + routes)   |  C  |  R  |  C  |  I   |  I
+API Routes (handler)             |  I  |  R  |  C  |  C   |  I
+Validation Zod (schemas)         |  C  |  R  |  I  |  I   |  I
+Migrations SQL                   |  I  |  I  |  R  |  I   |  I
+Policies RLS                     |  I  |  C  |  R  |  C   |  I
+Types TypeScript (database.ts)   |  C  |  C  |  R  |  I   |  I
+Tests unitaires (composants)     |  C  |  I  |  I  |  R   |  I
+Tests unitaires (hooks)          |  C  |  I  |  I  |  R   |  I
+Tests d'intégration (API)        |  I  |  C  |  I  |  R   |  I
+Tests RLS isolation              |  I  |  C  |  C  |  R   |  I
+Rapport de validation            |  I  |  I  |  I  |  R   |  I
+Vercel project config            |  I  |  I  |  I  |  I   |  R
+Variables d'environnement        |  I  |  C  |  C  |  I   |  R
+CI/CD pipeline                   |  I  |  I  |  I  |  C   |  R
+Preview deployment               |  I  |  I  |  I  |  C   |  R
+PR — ouverture et merge          |  R  |  R  |  R  |  A   |  C
+```
+
+---
+
+## 3. Responsabilités de chaque développeur
+
+### 3.1 Frontend Developer
+
+**Domaine** : tout ce qui est rendu dans le navigateur — composants, pages, navigation, hooks, état local.
+
+**Stack utilisée** : Next.js App Router · React · TypeScript · TailwindCSS
+
+**Responsabilités :**
+
+- Lire la fiche écran UX et implémenter le layout mobile-first (375px en premier)
+- Créer les composants React conformes aux specs UX : tous les états (vide, loading, nominal, erreur, succès) implémentés
+- Écrire les custom hooks qui consomment les API Routes (`useTasks`, `useShopping`, etc.) avec optimistic updates et rollback
+- Gérer l'état local avec `useState` + custom hooks — pas de state management global
+- Implémenter le contexte d'authentification (`AuthContext`) et s'assurer de la persistance de session
+- Appliquer les attributs ARIA et les `aria-label` sur tous les éléments interactifs non-natifs
+- S'assurer que les zones de tap sont ≥ 44×44px et que `pb-safe` est appliqué sur la bottom navigation
+
+**Contrat de sortie vers le Backend :**
+
+```typescript
+// Le Frontend déclare les appels API qu'il attend
+// Le Backend les implémente en respectant exactement ce contrat
+
+interface TasksAPI {
+  list:   GET    '/api/v1/tasks?householdId=UUID'     → Task[]
+  create: POST   '/api/v1/tasks'                      → Task (201)
+  toggle: PATCH  '/api/v1/tasks/:id'                  → Task (200)
+}
+```
+
+**Signaux vers les autres agents :**
+- → Backend : "J'ai besoin de l'endpoint `GET /api/v1/tasks` — voici le type de retour attendu"
+- → Testing : "Le composant TaskCard est prêt pour les tests unitaires"
+- → SM : "Bloqué — l'API Route n'est pas encore disponible"
+
+---
+
+### 3.2 Backend Developer
+
+**Domaine** : API Routes Next.js, logique métier, validation des inputs, gestion des sessions.
+
+**Stack utilisée** : Next.js API Routes · TypeScript · Zod · Supabase (client serveur)
+
+**Responsabilités :**
+
+- Créer les API Routes dans `src/app/api/v1/` selon le contrat convenu avec le Frontend
+- Valider tous les inputs entrants avec Zod (body, params, searchParams) — sans exception
+- Vérifier l'authentification (`auth.getUser()`) sur chaque route protégée
+- Vérifier l'appartenance au foyer (`household_members`) avant toute opération sur des données métier
+- Retourner les codes HTTP corrects : 200/201/400/401/403/404/422/500
+- Implémenter le middleware `middleware.ts` pour la protection des routes Next.js
+- Ne jamais utiliser la `SERVICE_ROLE_KEY` dans un composant client
+
+**Contrat de sortie vers le Frontend :**
+
+```typescript
+// Le Backend documente explicitement chaque route implémentée
+
+// GET /api/v1/tasks?householdId=UUID
+// Auth    : requis — 401 si absent
+// Access  : membership vérifié — 403 si non-membre
+// Success : 200 + Task[]
+// Errors  : 400 (param manquant), 401, 403, 500
+
+// POST /api/v1/tasks
+// Body    : { title: string, householdId: UUID, description?: string }
+// Errors  : 422 (Zod), 401, 403, 500
+// Success : 201 + Task créée
+```
+
+**Signaux vers les autres agents :**
+- → Frontend : "Route `GET /api/v1/tasks` disponible — voici le type de retour exact"
+- → Database : "J'ai besoin d'un index sur `tasks(household_id, created_at DESC)`"
+- → Testing : "API Route POST /tasks prête pour les tests d'intégration"
+
+---
+
+### 3.3 Database Developer
+
+**Domaine** : schéma Postgres, migrations, RLS policies, triggers, indexes, types TypeScript générés.
+
+**Stack utilisée** : Supabase · PostgreSQL 15+ · Supabase CLI
+
+**Responsabilités :**
+
+- Créer et versionner les migrations SQL dans `supabase/migrations/`
+- S'assurer que toute table métier a `household_id UUID NOT NULL` avec FK vers `households(id) ON DELETE CASCADE`
+- Écrire les policies RLS pour les 4 opérations (SELECT / INSERT / UPDATE / DELETE) sur chaque nouvelle table
+- Vérifier que les policies INSERT ont `WITH CHECK` — pas uniquement `USING`
+- Créer les indexes de performance selon les patterns de requêtes du Backend
+- Écrire les triggers nécessaires (`updated_at`, `handle_new_user`, etc.)
+- Régénérer les types TypeScript après chaque migration : `supabase gen types typescript > src/types/database.ts`
+- Partager le fichier `database.ts` mis à jour avec Frontend et Backend après chaque migration
+
+**Signaux vers les autres agents :**
+- → Backend : "Migration `tasks` appliquée — types régénérés disponibles dans `src/types/database.ts`"
+- → Backend : "RLS activé sur `tasks` — voici les policies et la helper function `is_household_member()`"
+- → Testing : "Migration prête — les tests RLS peuvent être écrits"
+- → Infra : "Nouvelle migration à appliquer avant le prochain déploiement preview"
+
+**Checklist par migration :**
+
+```
+- [ ] household_id NOT NULL sur toute table métier
+- [ ] RLS activé : ALTER TABLE ... ENABLE ROW LEVEL SECURITY
+- [ ] Policies SELECT / INSERT (WITH CHECK) / UPDATE / DELETE
+- [ ] Index créés selon les requêtes connues du Backend
+- [ ] Trigger updated_at si la table a cette colonne
+- [ ] Types TypeScript régénérés et partagés
+- [ ] Migration testée en local (supabase db push)
+```
+
+---
+
+### 3.4 Testing Developer
+
+**Domaine** : tests automatisés sur toutes les couches, rapports de validation, gestion des bugs.
+
+**Stack utilisée** : Jest · React Testing Library · Supabase local (tests RLS)
+
+**Responsabilités :**
+
+- Écrire les tests unitaires des composants React (RTL) dès qu'un composant est disponible
+- Écrire les tests unitaires des custom hooks (avec mocks fetch)
+- Écrire les tests d'intégration des API Routes (tous les codes HTTP, auth, isolation)
+- Écrire les tests d'isolation RLS en SQL sur Supabase local
+- Exécuter la suite complète après chaque PR et signaler les régressions
 - Rédiger le rapport de validation au format standard pour chaque story
-- Prononcer "Ready for Review" une fois tous les CA vérifiés et la suite de tests verte
+- Prononcer "Ready for Review" uniquement quand tous les CA passent et `next build` est propre
+- Documenter chaque bug au format standard avec étapes de reproduction reproductibles
+- Classer les bugs P1 → P4 selon les critères du skill `testing_quality.md` §6.1
 
-### 2.4 Qualité du code (Developer)
-
-- Aucun `any` TypeScript, aucun `as` non justifié, aucun `console.log` en production
-- Chaque composant a une interface TypeScript explicite pour ses props
-- Les erreurs asynchrones sont toutes capturées (`try/catch`) et propagées de façon cohérente
-- Les formulaires utilisent React Hook Form + Zod avec validation côté client **et** côté API Route
-- La couverture de tests reste ≥ 70% sur le code métier
-
-### 2.5 Signalement des blocages
-
-- Signaler tout blocage technique au Scrum Master dès le Daily — pas attendre le lendemain
-- Formuler le blocage avec précision : story concernée, cause, impact sur la livraison
-- Proposer un contournement si possible avant d'escalader
-- Ne pas débloquer un CA ambigu par une interprétation silencieuse — demander au PO via le SM
+**Signaux vers les autres agents :**
+- → Frontend : "Composant `TaskCard` — 8 tests passants ✅"
+- → Backend : "API Route POST /tasks — CA-3 échoue : retour 200 au lieu de 201"
+- → Database : "Test RLS isolation — User B accède aux tasks de User A → ❌ P1 Bloquant"
+- → SM : "Story TASK-01 — Rejected. BUG-003 (P2) non résolu"
+- → SM : "BUG-001 P1 découvert — signal immédiat"
 
 ---
 
-## 3. Inputs
+### 3.5 Infrastructure Developer
 
-### 3.1 Inputs par story
+**Domaine** : déploiement Vercel, CI/CD, variables d'environnement, monitoring, configuration des environnements.
 
-| Input | Source | Usage par le DEV_TEAM |
-|---|---|---|
-| User Story au format standard | PO (backlog) | Comprendre la valeur et les critères d'acceptation |
-| Critères d'acceptation (CA) | PO | Guider l'implémentation et les tests |
-| Definition of Done (DoD) | PO | Vérifier les conditions non fonctionnelles |
-| Fiche écran UX | UX Designer | Layout, états, composants, classes Tailwind |
-| Tâches techniques listées | Backlog (Dev+QA) | Base de travail décomposée avec rôle et effort |
-| Types TypeScript générés | `src/types/database.ts` | Typage des entités DB |
+**Stack utilisée** : Vercel · GitHub Actions (ou équivalent) · Supabase Cloud
 
-### 3.2 Inputs de référence technique
+**Responsabilités :**
 
-| Document | Localisation | Usage |
-|---|---|---|
-| Architecture Overview | `docs/architecture/architecture_overview.md` | Structure du projet, routes, stack |
-| Next.js Development Skill | `ai/roles/nextjs_development.md` | Conventions code, patterns, checklist PR |
-| Supabase Database Skill | `ai/roles/supabase_database.md` | Schéma, RLS, migrations, sécurité |
-| Testing Quality Skill | `ai/roles/testing_quality.md` | Stratégie de tests, formats, checklist |
+- Maintenir la configuration Vercel du projet (build settings, redirections, headers)
+- Gérer les variables d'environnement par environnement (local / preview / production)
+- S'assurer que `next build` passe en CI avant tout merge sur la branche principale
+- Configurer les preview deployments pour chaque PR ouverte
+- Vérifier que les migrations Supabase sont appliquées en preview avant les tests de validation
+- Monitorer les erreurs 5xx en production (Vercel Analytics, Supabase logs)
+- Alerter l'équipe si un déploiement échoue ou si une migration en production est à risque
 
-### 3.3 Inputs de processus
-
-| Input | Moment | Usage |
-|---|---|---|
-| Sprint Backlog finalisé | Sprint Planning | Liste des stories + tâches à implémenter |
-| Questions de clarification répondues | En continu (PO) | Lever les ambiguïtés avant le code |
-| Retours de PR (code review) | En cours de sprint | Corriger avant merge |
-| Rapport de validation QA | Post-implémentation | Corriger les CA non passants |
-| Bugs remontés | Post-Review | Stories de correction sprint suivant |
-
-### 3.4 Format des inputs pour les agents IA
+**Variables d'environnement — gestion par couche :**
 
 ```
-Commande d'implémentation (Developer)
+LOCAL (.env.local)
+  NEXT_PUBLIC_SUPABASE_URL          → URL du projet Supabase local
+  NEXT_PUBLIC_SUPABASE_ANON_KEY     → Clé anon Supabase local
+  SUPABASE_SERVICE_ROLE_KEY         → Clé service role (jamais NEXT_PUBLIC_)
+
+PREVIEW (Vercel env — preview branch)
+  NEXT_PUBLIC_SUPABASE_URL          → URL du projet Supabase staging
+  NEXT_PUBLIC_SUPABASE_ANON_KEY     → Clé anon staging
+  SUPABASE_SERVICE_ROLE_KEY         → Clé service role staging
+
+PRODUCTION (Vercel env — main branch)
+  NEXT_PUBLIC_SUPABASE_URL          → URL du projet Supabase production
+  NEXT_PUBLIC_SUPABASE_ANON_KEY     → Clé anon production
+  SUPABASE_SERVICE_ROLE_KEY         → Clé service role production
+
+Règle : SUPABASE_SERVICE_ROLE_KEY ne doit jamais apparaître dans le bundle client.
+        Vérification automatique en CI : grep -r "SERVICE_ROLE_KEY" .next/
+```
+
+**Checklist de déploiement preview :**
+
+```
+- [ ] next build passe sans erreur TypeScript ni ESLint
+- [ ] Migration Supabase appliquée sur l'environnement preview
+- [ ] Variables d'environnement preview configurées sur Vercel
+- [ ] Preview URL accessible et fonctionnelle
+- [ ] Aucune SERVICE_ROLE_KEY dans le bundle client
+- [ ] Logs Vercel vérifiés (pas d'erreur 5xx au démarrage)
+```
+
+**Signaux vers les autres agents :**
+- → Testing : "Preview disponible sur [URL] — migrations appliquées, prêt pour les tests"
+- → SM : "Déploiement preview échoué — `next build` en erreur sur la PR #N"
+- → Database : "Migration [nom] appliquée en production ✅"
+- → Toute l'équipe : "Incident production — erreur 5xx sur `/api/v1/tasks` depuis 14h30"
+
+---
+
+## 4. Inputs
+
+### 4.1 Inputs communs à tous les agents
+
+| Input | Source | Usage |
+|---|---|---|
+| User Story au format standard | PO (backlog) | Point de départ de chaque story |
+| Critères d'acceptation | PO | Guident l'implémentation et les tests |
+| Definition of Done | PO | Conditions non fonctionnelles |
+| Fiche écran UX | UX Designer | Layout, états, composants, interactions |
+| Sprint Backlog + tâches techniques | SM | Travail décomposé par rôle |
+
+### 4.2 Inputs spécifiques par agent
+
+| Agent | Input spécifique | Source |
+|---|---|---|
+| Frontend | Fiche écran UX complète (tous les états) | UX Designer |
+| Frontend | Contrat d'API Backend (types + codes HTTP) | Backend Dev |
+| Backend | Types générés Supabase (`database.ts`) | Database Dev |
+| Backend | Schéma des tables et policies RLS | Database Dev |
+| Database | Patterns de requêtes du Backend | Backend Dev |
+| Testing | Composants disponibles pour tests unitaires | Frontend Dev |
+| Testing | API Routes disponibles pour tests d'intégration | Backend Dev |
+| Testing | Migrations appliquées pour tests RLS | Database Dev |
+| Infra | Migrations à appliquer sur preview/prod | Database Dev |
+| Infra | Build + variables d'env nécessaires | Backend Dev |
+
+### 4.3 Format des inputs pour les agents IA
+
+```
+Commande de démarrage d'une story (tous les agents)
   → "Implémente la story TASK-01 — Créer une tâche
      Fiche écran : [contenu]
+     CA : [liste]
      Tâches techniques : T8.1 → T8.4"
 
-Commande de test (QA)
-  → "Écris la suite de tests pour TASK-01 selon les CA définis"
-  → "Valide FOYER-02 — vérifie l'isolation cross-foyer"
+Commande spécialisée — Frontend
+  → "Crée le composant TaskCard selon la fiche écran UX :
+     [layout, états, composants, classes Tailwind]"
 
-Commande de migration (Developer)
-  → "Crée la migration pour ajouter la table tasks avec son schéma et ses RLS policies"
+Commande spécialisée — Backend
+  → "Crée GET et POST /api/v1/tasks avec :
+     Auth Supabase · Vérification membership · Validation Zod"
 
-Signalement de blocage
-  → "CA-3 de SHOP-01 est ambigu — 'immédiatement' signifie-t-il avant ou après l'API ?"
-  → "La dépendance FOYER-01 n'est pas encore Done — TASK-01 ne peut pas démarrer"
+Commande spécialisée — Database
+  → "Crée la migration tasks avec household_id, RLS policies complètes,
+     index sur (household_id, created_at DESC)"
+
+Commande spécialisée — Testing
+  → "Écris la suite de tests complète pour TASK-01 :
+     Unitaires TaskCard · Intégration API · Isolation RLS"
+
+Commande spécialisée — Infra
+  → "Configure le preview deployment pour la PR TASK-01 :
+     Migration appliquée, vars env preview, URL de test"
 ```
 
 ---
 
-## 4. Outputs
+## 5. Outputs
 
-### 4.1 Outputs par story (Developer)
+### 5.1 Outputs par agent et par story
 
-| Output | Format | Localisation |
+| Agent | Output | Localisation |
 |---|---|---|
-| Composants React | `.tsx` TypeScript | `src/components/[domaine]/` |
-| Custom hooks | `.ts` TypeScript | `src/hooks/` |
-| API Routes | `route.ts` | `src/app/api/v1/[ressource]/` |
-| Schémas de validation Zod | `.ts` | `src/lib/validations/` |
-| Migrations SQL | `.sql` versionné | `supabase/migrations/` |
-| Types TypeScript régénérés | `database.ts` | `src/types/` |
-| Pull Request | PR description structurée | Dépôt Git |
+| **Frontend** | Composants `.tsx` | `src/components/[domaine]/` |
+| | Custom hooks `.ts` | `src/hooks/` |
+| | Pages / layouts | `src/app/(app)/[route]/` |
+| **Backend** | API Routes `route.ts` | `src/app/api/v1/[ressource]/` |
+| | Schémas Zod `.ts` | `src/lib/validations/` |
+| | Middleware `middleware.ts` | `src/` |
+| **Database** | Migrations SQL `.sql` | `supabase/migrations/` |
+| | Types TypeScript `database.ts` | `src/types/` |
+| | Fonctions SQL helpers | `supabase/migrations/` |
+| **Testing** | Tests unitaires `.test.tsx` | `src/__tests__/components/` |
+| | Tests d'intégration `.test.ts` | `src/__tests__/api/` |
+| | Tests RLS `.sql` | `supabase/tests/` |
+| | Rapport de validation `.md` | `docs/validation/sprint-N/` |
+| | Fiches de bugs `.md` | `docs/bugs/` |
+| **Infra** | Configuration Vercel | `vercel.json` |
+| | CI/CD workflow | `.github/workflows/` |
+| | Variables d'env | Vercel Dashboard (pas en fichier) |
 
-### 4.2 Format de description de Pull Request
+### 5.2 Format de la Pull Request
+
+Chaque agent ouvre sa propre PR. Une story peut avoir plusieurs PRs (ex : Frontend + Backend + Database).
 
 ```markdown
-## PR — [ID Story] — [Titre de la story]
+## PR — [Agent] — [ID Story] — [Titre]
 
-**Story** : [lien backlog]
+**Agent**  : Frontend Dev | Backend Dev | Database Dev | Testing Dev | Infra Dev
+**Story**  : [ID] — [lien backlog]
 **Sprint** : Sprint [N]
-**Type** : Feature | Fix | Migration | Refactor
 
 ### Changements
 
-**Composants créés / modifiés**
-- `src/components/[...]/[Composant].tsx` — [description courte]
+[Liste des fichiers créés ou modifiés avec description courte]
 
-**API Routes créées / modifiées**
-- `GET /api/v1/[route]` — [description courte]
-- `POST /api/v1/[route]` — [description courte]
+### Interface exposée / consommée
 
-**Migrations**
-- `[timestamp]_[nom].sql` — [description du changement de schéma]
+Frontend  : "Consomme GET /api/v1/tasks — contrat respecté"
+Backend   : "Expose POST /api/v1/tasks — 201 + Task sur succès"
+Database  : "Migration 20260304_tasks.sql — types régénérés"
+
+### Dépendances inter-PRs
+
+"Cette PR dépend de la PR Database #N (migration tasks)"
+"Cette PR peut merger dès que la PR Backend #N est mergée"
 
 ### Checklist
 
-- [ ] TypeScript strict : aucun any, aucun as non justifié
-- [ ] `next build` passe sans erreur
-- [ ] Tests unitaires écrits et passants
-- [ ] Tests d'intégration écrits et passants (API Routes)
-- [ ] Isolation multi-tenant vérifiée (household_id)
-- [ ] SERVICE_ROLE_KEY absente du bundle client
-- [ ] Zones de tap ≥ 44×44px (DevTools mobile)
-- [ ] Migration SQL versionnée + types régénérés si schéma modifié
-
-### Tests
-
-```
-[Résumé de la suite de tests]
-  Tests : [N] passants / [N] total
-  Couverture : [X]%
+- [ ] next build ✅ (pour Frontend, Backend)
+- [ ] TypeScript strict — aucun any, aucun as
+- [ ] Tests passants — [N] pass / [N] total
+- [ ] SERVICE_ROLE_KEY absente du bundle client (Infra / Backend)
+- [ ] Migration versionnée + types régénérés (Database)
+- [ ] Rapport de validation QA joint (Testing)
 ```
 
-### Comportement à valider manuellement
+### 5.3 Format du rapport de synthèse de story
 
-- [ ] [Scénario 1 à tester en local]
-- [ ] [Scénario 2 à tester en local]
-```
-
-### 4.3 Outputs par story (QA Engineer)
-
-| Output | Format | Usage |
-|---|---|---|
-| Suite de tests de validation | `.test.tsx` / `.test.ts` | Exécutée en CI + revue Developer |
-| Rapport de validation | Markdown structuré | Décision Sprint Review (PO) |
-| Fiches de bugs | Format standard | Signalement Developer + SM |
-
-### 4.4 Format du rapport de validation QA
+Produit par le Testing Developer quand tous les agents ont convergé :
 
 ```markdown
-## Rapport de validation — [ID Story] — [Titre]
+## Synthèse story — [ID Story] — [Titre]
 
-**Date** : YYYY-MM-DD
-**Environnement** : Local / Preview Vercel
-**Décision** : ✅ Ready for Review | ❌ Rejected — bugs bloquants
+**Sprint** : Sprint [N]
+**Date**   : YYYY-MM-DD
+**Décision**: ✅ Ready for Sprint Review | ❌ Blocked — [raison]
+
+### Contributions par agent
+
+| Agent | PR | Statut | Notes |
+|---|---|---|---|
+| Frontend Dev | #N | ✅ Mergée | — |
+| Backend Dev  | #N | ✅ Mergée | — |
+| Database Dev | #N | ✅ Mergée | — |
+| Testing Dev  | #N | ✅ Tests verts | Couverture : 82% |
+| Infra Dev    | —  | ✅ Preview OK | URL : [preview-url] |
+
+### Résultats des tests
+
+| Suite | Total | Pass | Fail |
+|---|---|---|---|
+| Composants React | [N] | [N] | [N] |
+| API Routes | [N] | [N] | [N] |
+| Isolation RLS | [N] | [N] | [N] |
 
 ### Critères d'acceptation
 
-| # | Critère | Résultat | Notes |
-|---|---|---|---|
-| CA-1 | [Texte] | ✅ Pass | — |
-| CA-2 | [Texte] | ✅ Pass | — |
-| CA-3 | [Texte] | ❌ Fail | [Description de l'échec] |
-
-### Tests automatisés
-
-| Suite | Tests | Pass | Fail |
-|---|---|---|---|
-| Composant | [N] | [N] | [N] |
-| API Route | [N] | [N] | [N] |
-| Isolation RLS | [N] | [N] | [N] |
-
-### Cas limites testés
-
-- [ ] Mobile 375px — Chrome DevTools
-- [ ] Erreur réseau simulée (DevTools Offline)
-- [ ] Utilisateur non membre du foyer → 403 attendu
-- [ ] Champs à la limite (titre 100 chars, etc.)
-
-### Bugs découverts
-
-[BUG-N] Sévérité — Description courte
-
-### Décision
-
-✅ Ready for Review — tous les CA passent, suite de tests verte
-```
-
----
-
-## 5. Skills utilisés
-
-### 5.1 nextjs_development
-
-**Localisation** : `ai/roles/nextjs_development.md`  
-**Utilisé par** : Developer
-
-Le skill `nextjs_development` définit toutes les conventions d'implémentation frontend et backend de FoyerApp. Le Developer le consulte pour chaque story.
-
-| Situation | Section consultée |
+| CA | Résultat |
 |---|---|
-| Créer un nouveau fichier ou route | §2.1 — Structure de fichiers complète |
-| Créer un layout protégé | §2.2 — Route Groups, layout serveur |
-| Implémenter le middleware auth | §2.3 — Middleware Next.js complet |
-| Choisir le bon client Supabase | §2.4 — `client.ts` vs `server.ts` |
-| Nommer composants, hooks, types | §3.1 — Conventions de nommage |
-| Écrire l'anatomie d'un composant | §3.2 — Pattern complet avec états |
-| Créer un composant UI atomique | §3.3 — Button, Input avec forwardRef |
-| Gérer des classes Tailwind dynamiques | §3.4 — Utilitaire `cn` |
-| Choisir la stratégie d'état | §4.1 — Tableau de décision par type |
-| Écrire un custom hook | §4.2 — Pattern avec optimistic update |
-| Créer le contexte auth | §4.3 — AuthContext + onAuthStateChange |
-| Gérer un formulaire | §4.4 — React Hook Form + Zod |
-| Écrire une API Route GET | §5.1 — Structure complète auth → validation → DB |
-| Écrire une API Route POST / PATCH | §5.1 — Pattern Zod + codes HTTP |
-| Configurer Supabase Realtime | §5.3 — Subscribe + cleanup |
-| Écrire du TypeScript strict | §6.1 — Règles any, as, type guards |
-| Gérer les erreurs proprement | §6.2 — AppError, try/catch cohérent |
-| Optimiser les performances | §6.3 — dynamic, next/image, memo |
-| Valider les variables d'env | §6.4 — Zod au démarrage |
-| Valider avant d'ouvrir une PR | §6.6 — Checklist complète |
+| CA-1 — [texte] | ✅ Pass |
+| CA-2 — [texte] | ✅ Pass |
 
-### 5.2 supabase_database
+### Bugs ouverts
 
-**Localisation** : `ai/roles/supabase_database.md`  
-**Utilisé par** : Developer
+Aucun | [BUG-N (P[sévérité]) — description]
+```
 
-Le skill `supabase_database` définit le schéma, les migrations, les RLS policies et les règles de sécurité. Le Developer le consulte pour toute story qui touche à la base de données.
+---
 
-| Situation | Section consultée |
-|---|---|
-| Comprendre le schéma global | §2.1 — Vue d'ensemble + diagramme |
-| Écrire ou lire le DDL d'une table | §2.2 — DDL complet avec contraintes |
-| Créer un index de performance | §2.3 — Indexes partiels et composites |
-| Écrire un trigger | §2.4 — Triggers complets (updated_at, etc.) |
-| Vérifier l'isolation household_id | §3.1 — Règle fondamentale multi-tenant |
-| Écrire une requête d'appartenance | §3.2 — Pattern EXISTS standard |
-| Implémenter la jonction par code | §3.3 — Fonction `join_household_by_code` |
-| Activer RLS sur une nouvelle table | §4.1 — Principe et activation |
-| Écrire les policies d'une table | §4.2–§4.6 — Policies par table et opération |
-| Utiliser les helpers RLS | §4.7 — `is_household_member()` |
-| Tester les policies RLS | §4.8 — Simulation utilisateur en SQL |
-| Créer une migration versionnée | §5.1 — Structure et commandes CLI |
-| Nommer les objets DB | §5.2 — Conventions snake_case |
-| Régénérer les types TypeScript | §5.3 — Commande et usage |
-| Mapper une erreur Postgres | §5.4 — Codes d'erreur → messages UX |
-| Configurer Realtime | §5.5 — Tables à activer |
-| Implémenter la pagination | §5.6 — Cursor-based pagination |
-| Appliquer les règles de sécurité | §6.1–§6.3 — Modèle de confiance, env vars |
-| Valider avant déploiement | §6.6 — Checklist de sécurité |
+## 6. Skills utilisés
 
-### 5.3 testing_quality
+### 6.1 nextjs_development — Frontend + Backend
 
-**Localisation** : `ai/roles/testing_quality.md`  
-**Utilisé par** : Developer + QA Engineer
+**Localisation** : `ai/roles/nextjs_development.md`
 
-Le skill `testing_quality` définit la stratégie de tests, les formats et les processus de validation. Il est partagé par les deux rôles.
-
-| Situation | Rôle | Section consultée |
+| Agent | Situation | Section |
 |---|---|---|
-| Choisir le niveau de test adapté | Dev + QA | §2.1 — Pyramide de tests |
-| Décider ce qui est testé ou non | Dev + QA | §2.2 — Périmètre par couche |
-| Configurer Jest | Dev | §2.3 — `jest.config.ts` + `jest.setup.ts` |
-| Nommer les blocs de tests | Dev + QA | §2.4 — Conventions describe/it |
-| Tester un composant React | Dev | §3.1 — Pattern RTL complet |
-| Tester un formulaire | Dev | §3.2 — Validation, soumission, erreur |
-| Tester un schéma Zod | Dev | §3.3 — Cas limites des champs |
-| Tester un custom hook | Dev | §3.4 — Optimistic + rollback |
-| Créer les utilitaires de test API | Dev + QA | §4.1 — `createRequest`, mock Supabase |
-| Tester une API Route GET | Dev + QA | §4.2 — Auth, 403, 200 avec données |
-| Tester une API Route POST | Dev + QA | §4.3 — Validation, création, 201 |
-| Tester l'isolation RLS | QA | §4.4 — Simulation SQL cross-foyer |
-| Suivre le processus de validation | QA | §5.1 — Étapes "Ready for QA" → verdict |
-| Rédiger le rapport de validation | QA | §5.2 — Format standard |
-| Valider une story du MVP | QA | §5.3 — Checklists par module (AUTH, FOYER, etc.) |
-| Définir la sévérité d'un bug | QA | §6.1 — P1 Bloquant → P4 Cosmétique |
-| Rédiger une fiche de bug | QA | §6.2 — Format standard complet |
-| Décider si une story est Done | QA | §6.4 — Critères de fermeture |
+| Frontend | Structure des fichiers et des routes | §2.1 |
+| Frontend | Layouts protégés avec route groups | §2.2 |
+| Frontend | Conventions de nommage | §3.1 |
+| Frontend | Anatomie d'un composant complet | §3.2 |
+| Frontend | Composants UI atomiques (Button, Input) | §3.3 |
+| Frontend | Classes conditionnelles Tailwind (`cn`) | §3.4 |
+| Frontend | Stratégie d'état par type de donnée | §4.1 |
+| Frontend | Pattern custom hook + optimistic update | §4.2 |
+| Frontend | Contexte d'authentification | §4.3 |
+| Frontend | Formulaires React Hook Form + Zod | §4.4 |
+| Backend | Middleware d'authentification | §2.3 |
+| Backend | Client Supabase serveur vs browser | §2.4 |
+| Backend | Structure d'une API Route complète | §5.1 |
+| Backend | Convention des codes HTTP | §5.2 |
+| Backend | Supabase Realtime dans un hook | §5.3 |
+| Backend | TypeScript strict — règles | §6.1 |
+| Backend | Gestion des erreurs (AppError) | §6.2 |
+| Frontend/Backend | Checklist avant PR | §6.6 |
 
----
+### 6.2 supabase_database — Database + Backend
 
-## 6. Règles du rôle
+**Localisation** : `ai/roles/supabase_database.md`
 
-### 6.1 Règles de périmètre
-
-```
-✅ Le DEV_TEAM décide du COMMENT — architecture, implémentation, choix techniques
-❌ Le DEV_TEAM ne décide pas du QUOI — la priorisation appartient au PO
-❌ Le DEV_TEAM ne modifie pas les critères d'acceptation
-   → Il peut signaler une ambiguïté ; c'est le PO qui clarifie
-❌ Le DEV_TEAM ne touche pas au Sprint Backlog — c'est le PO avec le SM
-❌ Le Developer ne décide pas unilatéralement qu'un CA est trop complexe et l'ignore
-   → Tout écart de périmètre est signalé au SM avant d'être décidé
-```
-
-### 6.2 Règles de qualité du code (Developer)
-
-```
-✅ TypeScript strict : aucun any, aucun as sans type guard préalable
-✅ Chaque composant a une interface TypeScript explicite pour ses props
-✅ Toutes les fonctions async ont un try/catch ou propagent explicitement l'erreur
-✅ Tout formulaire a une validation Zod côté client ET côté API Route
-✅ next build passe sans erreur avant toute PR — sans exception
-✅ La couverture de tests reste ≥ 70% sur le code métier
-❌ Aucun console.log laissé dans le code de production
-❌ Aucune key={index} dans une liste avec des items stables — toujours key={item.id}
-❌ Aucune image sans next/image
-```
-
-### 6.3 Règles de sécurité base de données (Developer)
-
-```
-✅ Toute table avec des données métier a une colonne household_id NOT NULL
-✅ RLS est activé sur toute nouvelle table dès sa création
-✅ Toute nouvelle table a des policies pour les 4 opérations (SELECT/INSERT/UPDATE/DELETE)
-✅ Les policies INSERT ont WITH CHECK — pas seulement USING
-✅ SERVICE_ROLE_KEY absente de tout composant avec 'use client'
-✅ Toute modification de schéma passe par un fichier de migration versionné
-✅ Les types TypeScript sont régénérés après chaque migration
-❌ Jamais de modification directe du schéma via le dashboard Supabase en production
-❌ Jamais d'interpolation de valeurs utilisateur dans du SQL brut
-```
-
-### 6.4 Règles de tests et de qualité (QA)
-
-```
-✅ Chaque story a des tests pour le chemin nominal ET au moins un cas d'erreur
-✅ L'isolation multi-tenant est testée pour toute story manipulant des données de foyer
-✅ Un bug sans étapes de reproduction reproductibles n'est pas remonté
-✅ Un test de régression est écrit pour chaque bug corrigé
-✅ Le verdict "Ready for Review" n'est prononcé que si TOUS les CA sont vérifiés
-❌ Un bug Bloquant (P1) n'est jamais ignoré — même en fin de sprint
-❌ La story ne peut pas passer en "Done" si next build échoue
-❌ Accepter une story avec un bug P1 ou P2 non résolu est interdit
-```
-
-### 6.5 Règles de workflow
-
-```
-Cycle d'une story :
-
-  READY → IN PROGRESS (Developer commence)
-       ↓
-  Developer ouvre une PR
-       ↓
-  QA exécute les tests + valide les CA
-       ↓
-  Si CA passants : IN REVIEW → "Ready for Sprint Review"
-  Si CA échouants : story reste IN PROGRESS + bug documenté
-       ↓
-  Sprint Review : PO prononce Accepted ou Rejected
-
-Règles de passage entre états :
-  → IN PROGRESS  : dépendances Done, CA lus, fiche UX disponible
-  → IN REVIEW    : next build propre, tests passants, PR ouverte
-  → DONE         : Accepted par le PO en Sprint Review
-```
-
-### 6.6 Règles de communication
-
-```
-Format des sorties :
-  → Les PR suivent le format défini en §4.2
-  → Les rapports de validation QA suivent le format §4.4
-  → Les fiches de bugs suivent le format du skill testing_quality §6.2
-
-Signaux à émettre explicitement au SM :
-  → Story bloquée : cause + impact sur le Sprint Goal + contournement éventuel
-  → CA ambigu découvert pendant l'implémentation
-  → Dépendance non documentée détectée en cours de sprint
-  → next build en échec persistant (> 1 Daily sans résolution)
-  → Couverture de tests tombée sous 60%
-
-Collaboration Developer ↔ QA :
-  → Le Developer informe le QA quand une story passe en IN REVIEW
-  → Le QA informe le Developer des CA qui échouent avec précision
-    (pas seulement "ça ne marche pas" — étapes de reproduction obligatoires)
-  → Les deux partagent les mocks et fixtures de test pour éviter la duplication
-```
-
-### 6.7 Règles de priorité technique
-
-Quand deux choix d'implémentation sont en concurrence, l'équipe applique cette hiérarchie :
-
-```
-1. Sécurité (RLS, isolation, credentials)       → toujours en premier
-2. Correction (le CA est respecté)              → avant la performance
-3. Lisibilité (le code peut être repris)        → avant l'optimisation prématurée
-4. Performance (optimisation mesurée)           → uniquement sur seuil identifié
-5. Élégance (refactoring, DRY)                  → dans la limite du sprint
-```
-
----
-
-## Annexe A — Cycle de vie d'une story dans le DEV_TEAM
-
-```
-SPRINT PLANNING
-     │
-     ▼
-Story assignée au DEV_TEAM
-  → Developer lit les CA et la fiche UX
-  → QA identifie les scénarios de test
-  → Ambiguïtés signalées → PO via SM
-     │
-     ▼
-IN PROGRESS — Developer implémente
-  → Composants + API Route + migration
-  → Tests unitaires écrits en parallèle
-  → QA prépare la suite de tests de validation
-     │
-     ▼
-PR ouverte par le Developer
-  → next build ✅, lint ✅, tests ✅
-  → Checklist PR complétée (skill nextjs_development §6.6)
-     │
-     ▼
-IN REVIEW — QA valide
-  → Exécution des CA un par un
-  → Tests d'isolation RLS
-  → Rapport de validation rédigé
-     │
-  ┌──┴───────────────────────┐
-  │                          │
-  ▼                          ▼
-Tous CA ✅              Au moins 1 CA ❌
-  │                          │
-  ▼                          ▼
-"Ready for Review"      Bug documenté
-  → Sprint Review        Story → IN PROGRESS
-  → PO prononce          Developer corrige
-    Accepted ✅           → retour à PR
-```
-
-## Annexe B — Matrice de responsabilités DEV_TEAM
-
-| Tâche | Developer | QA |
+| Agent | Situation | Section |
 |---|---|---|
-| Implémenter les composants React | ✅ Principal | — |
-| Implémenter les API Routes | ✅ Principal | — |
-| Écrire les migrations SQL | ✅ Principal | — |
-| Écrire les tests unitaires (composants) | ✅ Principal | Revue |
-| Écrire les tests d'intégration (API) | ✅ Principal | Revue |
-| Écrire les tests de validation des CA | Revue | ✅ Principal |
-| Tester l'isolation multi-tenant (RLS) | — | ✅ Principal |
-| Rédiger le rapport de validation | — | ✅ Principal |
-| Documenter les bugs | — | ✅ Principal |
-| Ouvrir la Pull Request | ✅ Principal | — |
-| Valider "Ready for Review" | — | ✅ Principal |
+| Database | Vue d'ensemble du schéma | §2.1 |
+| Database | DDL complet par table | §2.2 |
+| Database | Indexes de performance | §2.3 |
+| Database | Triggers (updated_at, handle_new_user) | §2.4 |
+| Database | Règle fondamentale household_id | §3.1 |
+| Database | Fonction join_household_by_code | §3.3 |
+| Database | Activation et principe RLS | §4.1 |
+| Database | Policies par table (profiles → shopping) | §4.2–§4.6 |
+| Database | Helpers is_household_member / admin | §4.7 |
+| Database | Tester les policies RLS en SQL | §4.8 |
+| Database | Migrations versionnées (structure) | §5.1 |
+| Database | Conventions de nommage SQL | §5.2 |
+| Database | Génération des types TypeScript | §5.3 |
+| Backend | Mapper les erreurs Postgres → messages UX | §5.4 |
+| Database | Configuration Realtime | §5.5 |
+| Backend | Pagination cursor-based | §5.6 |
+| Database/Infra | Checklist sécurité avant déploiement | §6.6 |
+
+### 6.3 testing_quality — Testing + tous les agents
+
+**Localisation** : `ai/roles/testing_quality.md`
+
+| Agent | Situation | Section |
+|---|---|---|
+| Testing | Pyramide et périmètre de tests | §2.1–§2.2 |
+| Testing | Configuration Jest + setup | §2.3 |
+| Testing | Conventions de nommage describe/it | §2.4 |
+| Testing | Tests de composants RTL | §3.1 |
+| Testing | Tests de formulaires | §3.2 |
+| Testing | Tests de schémas Zod | §3.3 |
+| Testing | Tests de custom hooks | §3.4 |
+| Testing | Utilitaires createRequest + mock Supabase | §4.1 |
+| Testing | Tests API Routes GET | §4.2 |
+| Testing | Tests API Routes POST | §4.3 |
+| Testing | Tests isolation RLS SQL | §4.4 |
+| Testing | Processus de validation story | §5.1 |
+| Testing | Rapport de validation format | §5.2 |
+| Testing | Checklists par module MVP | §5.3 |
+| Testing | Sévérités de bug (P1→P4) | §6.1 |
+| Testing | Fiche de bug format standard | §6.2 |
+| Testing | Critères de clôture d'un bug | §6.4 |
+| Testing | Métriques qualité sprint | §6.5 |
 
 ---
 
-*Ce document définit le rôle, les règles et les conventions de l'équipe de développement IA dans le système AI Scrum de FoyerApp. Il est mis à jour à chaque évolution significative de la stack ou des standards de qualité de l'équipe.*
+## 7. Règles de collaboration
+
+### 7.1 Règles de synchronisation (Sync Points)
+
+```
+SYNC POINT A — Contrat d'interface (avant implémentation parallèle)
+  Déclencheur : fin de la Phase 1 (lecture & analyse)
+  Obligatoire : Database annonce les tables disponibles
+                Backend annonce les routes et types de retour
+                Frontend confirme la compatibilité avec la fiche UX
+  Format      : commentaire dans le Sprint Backlog de la story
+  Durée max   : 1 cycle (avant le prochain Daily)
+
+SYNC POINT B — Intégration (avant Phase 3)
+  Déclencheur : Frontend + Backend + Database ont des PRs ouvertes
+  Obligatoire : Testing vérifie que les tests unitaires passent
+                Infra vérifie que next build passe sur la branche feature
+  Durée max   : même cycle que l'ouverture des PRs
+
+SYNC POINT C — Validation (avant In Review)
+  Déclencheur : Testing a exécuté la suite complète
+  Obligatoire : Testing prononce Ready for Review ou liste les bugs
+                Infra confirme que le preview deployment est fonctionnel
+  Format      : rapport de synthèse story (§5.3)
+
+SYNC POINT D — PR mergée
+  Déclencheur : Testing → "Ready for Review"
+  Obligatoire : toutes les PRs de la story sont mergées
+                Testing ouvre la story en Sprint Review
+```
+
+### 7.2 Règles d'interface entre agents
+
+```
+Frontend → Backend
+  ✅ Déclarer le contrat d'API attendu (type de retour, codes HTTP) au SYNC A
+  ✅ Signaler immédiatement si l'API retournée ne correspond pas au contrat
+  ❌ Ne jamais appeler une API non documentée par le Backend
+
+Backend → Database
+  ✅ Partager les patterns de requêtes nécessaires pour les indexes
+  ✅ Utiliser uniquement les tables et colonnes documentées dans le schéma
+  ❌ Ne jamais faire de requête SQL directe en dehors du client Supabase
+
+Database → Tout le monde
+  ✅ Régénérer les types TypeScript et les partager après chaque migration
+  ✅ Signaler les breaking changes de schéma avant d'appliquer la migration
+  ❌ Ne jamais modifier une table existante sans créer une migration
+
+Testing → Tout le monde
+  ✅ Partager les fixtures et mocks réutilisables avec tous les agents
+  ✅ Signaler les bugs P1 immédiatement au SM — ne pas attendre
+  ❌ Ne pas commencer les tests si next build échoue
+
+Infra → Testing
+  ✅ Notifier dès que le preview deployment est disponible et les migrations appliquées
+  ❌ Ne jamais déployer en production sans que Testing ait prononcé "Ready for Review"
+```
+
+### 7.3 Règles de qualité communes
+
+```
+Code (tous les agents)
+  ✅ TypeScript strict — aucun any, aucun as sans type guard
+  ✅ next build passe avant toute PR — sans exception
+  ✅ Aucun console.log en production
+  ✅ Chaque composant a une interface TypeScript explicite
+
+Sécurité (Backend + Database + Infra)
+  ✅ SERVICE_ROLE_KEY uniquement côté serveur — jamais dans NEXT_PUBLIC_
+  ✅ RLS activé sur toute nouvelle table dès sa création
+  ✅ Toute table métier a household_id NOT NULL
+  ✅ Policies INSERT ont WITH CHECK
+
+Tests (Testing + tous les agents)
+  ✅ Couverture ≥ 70% sur le code métier
+  ✅ Tests d'isolation RLS sur toute story manipulant des données de foyer
+  ✅ Un test de régression pour chaque bug corrigé
+```
+
+### 7.4 Règles de résolution de conflits
+
+```
+Conflit Frontend ↔ Backend (contrat d'API)
+  → Arbitrage : Backend propose, Frontend valide la compatibilité UX
+  → Si désaccord : escalade au SM qui convoque les deux agents
+
+Conflit Backend ↔ Database (schéma vs requêtes)
+  → Arbitrage : Database propose le schéma, Backend adapte ses requêtes
+  → Breaking change imposé par Database : migration versionnée + préavis 1 cycle
+
+Conflit Testing ↔ tout agent (CA non respecté)
+  → Testing a autorité sur le verdict — un CA échoue = story Rejected
+  → L'agent concerné corrige et re-soumet — Testing re-valide
+  → Si désaccord sur l'interprétation du CA : escalade au PO via SM
+
+Conflit Infra ↔ tout agent (build cassé)
+  → La branche principale ne peut jamais avoir un build cassé
+  → Infra peut bloquer un merge si le build échoue
+  → Priorité de correction : P0 — toute l'équipe s'arrête
+```
+
+### 7.5 Règles de communication
+
+```
+Format des signaux inter-agents :
+  "[Agent source] → [Agent cible] : [action] — [story ID] — [détail]"
+
+Exemples :
+  "Database Dev → Backend Dev : Migration tasks appliquée — TASK-01 — types régénérés"
+  "Testing Dev → SM : BUG-003 P1 — TASK-01 — isolation RLS cross-foyer"
+  "Infra Dev → Testing Dev : Preview disponible — TASK-01 — [url]"
+  "Frontend Dev → Backend Dev : Contrat attendu GET /tasks — TASK-01 — type Task[]"
+
+Règle de délai :
+  → Signaux critiques (P1, build cassé, sync point) : dans le cycle courant
+  → Signaux normaux (contrat d'API, migration dispo) : avant le Daily suivant
+  → Signaux informatifs (tests passants, preview OK) : dans la PR ou rapport
+```
+
+---
+
+## Annexe — Exemple de coordination sur TASK-01
+
+```
+STORY TASK-01 — Créer une tâche
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PHASE 1 — Analyse (simultané)
+  Database Dev : "Table tasks existe — migration non nécessaire ✅"
+  Backend Dev  : "Besoin de POST /api/v1/tasks — retourne Task (201)"
+  Frontend Dev : "Fiche UX lue — bottom drawer + optimistic update"
+  Testing Dev  : "CA-1→CA-4 identifiés — tests RTL + API + RLS planifiés"
+  Infra Dev    : "Pas de nouvelle var d'env — preview configuré"
+
+  ↓ SYNC A : contrat signé
+
+PHASE 2 — Implémentation parallèle
+  Database Dev → Backend Dev : "Types database.ts régénérés ✅"
+  Backend Dev  → Frontend Dev : "POST /api/v1/tasks dispo — retourne Task 201 ✅"
+  Frontend Dev → Testing Dev  : "TaskCard + TaskForm disponibles pour tests unitaires"
+  Infra Dev    → Testing Dev  : "next build passe sur feature/task-01 ✅"
+
+  ↓ SYNC B : PRs ouvertes
+
+PHASE 3 — Intégration
+  Frontend Dev : "Optimistic update connecté à POST /api/v1/tasks ✅"
+  Testing Dev  : "Tests RTL passants (8/8) · API tests passants (6/6)"
+  Testing Dev  : "Test RLS : User B → tasks User A → 403 ✅"
+
+  ↓ SYNC C : rapport de validation émis
+
+Testing Dev → SM : "TASK-01 — Ready for Sprint Review ✅
+  CA-1 ✅ CA-2 ✅ CA-3 ✅ CA-4 ✅ — Couverture 84% — 0 bug"
+
+Infra Dev → Testing Dev : "Preview https://foyer-task01.vercel.app ✅"
+
+  ↓ SYNC D : story In Review → Sprint Review → PO Accepted ✅
+```
+
+---
+
+*Ce document définit l'organisation, les responsabilités et les règles de collaboration de l'équipe de développement IA de FoyerApp. Il est mis à jour à chaque évolution de la composition de l'équipe, de la stack technique ou des conventions de collaboration.*
