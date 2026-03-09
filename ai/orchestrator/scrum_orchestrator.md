@@ -1,9 +1,8 @@
 # Orchestrateur — AI Scrum Team
 
 > **Système** : AI Scrum Team  
-> **Agent** : Scrum Orchestrator  
-> **Version** : 1.0  
-> **Date** : 2026-03-04  
+> **Document** : Référence de l'Orchestrateur — v3.0  
+> **Date** : 2026-03-05  
 > **Projet** : FoyerApp — mobile-first PWA  
 > **Stack** : Next.js · TypeScript · TailwindCSS · Supabase · Vercel
 
@@ -11,1024 +10,1457 @@
 
 ## Table des matières
 
-1. [Mission de l'orchestrateur](#1-mission-de-lorchestrator)
+1. [Mission](#1-mission)
 2. [Architecture du système](#2-architecture-du-système)
-3. [Processus complet — développement d'une User Story](#3-processus-complet--développement-dune-user-story)
-   - Étape 1 — Analyse de la User Story
-   - Étape 2 — Validation par le Product Owner
-   - Étape 3 — Planification par le Scrum Master
-   - Étape 4 — Conception UX
-   - Étape 5 — Conception base de données
-   - Étape 6 — Implémentation backend
-   - Étape 7 — Implémentation frontend
-   - Étape 8 — Tests automatisés
-   - Étape 9 — Validation QA
-4. [Règles de coordination](#4-règles-de-coordination)
-5. [Gestion des dépendances](#5-gestion-des-dépendances)
-6. [Gestion des erreurs](#6-gestion-des-erreurs)
+3. [Vue d'ensemble du pipeline](#3-vue-densemble-du-pipeline)
+4. [Étapes du pipeline](#4-étapes-du-pipeline)
+5. [Règles d'exécution (Execution Rules)](#5-règles-dexécution-execution-rules)
+6. [Gestion des erreurs (Error Handling)](#6-gestion-des-erreurs-error-handling)
+7. [Journal d'état](#7-journal-détat)
+8. [Référence agents](#8-référence-agents)
 
 ---
 
-## 1. Mission de l'orchestrateur
+## 1. Mission
 
-L'Orchestrateur est le **chef d'orchestre du système AI Scrum**. Il ne produit pas de code, ne conçoit pas d'écrans, ne rédige pas de stories. Il fait une seule chose : **activer le bon agent au bon moment, avec le bon input, et vérifier que l'output attendu est produit avant de passer à l'étape suivante**.
+L'Orchestrateur est le **contrôleur central du système AI Scrum**. Il n'écrit pas de code, ne conçoit pas d'écrans et ne définit pas les exigences. Il fait une seule chose : **activer le bon agent au bon moment, vérifier que l'output attendu a été produit, et bloquer le pipeline jusqu'à ce que ce soit le cas**.
 
-Sa mission tient en une phrase :
-
-> **Piloter automatiquement le développement complet d'une User Story — de sa réception à son verdict Sprint Review — en coordonnant les 9 agents de l'équipe dans le bon ordre, en gérant les dépendances et en résolvant les blocages.**
-
-L'Orchestrateur est l'unique agent qui a une vue globale de l'état d'une story à tout instant. Les agents spécialisés connaissent leur domaine — l'Orchestrateur connaît le flux.
+> **Mission** : Piloter automatiquement le développement complet d'une User Story — de la réception au verdict Sprint Review — en coordonnant 9 agents IA dans le bon ordre, en appliquant les execution gates, et en résolvant les blocages.
 
 ### Ce que l'Orchestrateur fait
 
 ```
-✅ Active chaque agent avec un prompt structuré et les inputs nécessaires
-✅ Vérifie que chaque output est conforme avant de passer à l'étape suivante
-✅ Gère les points de synchronisation entre agents parallèles
-✅ Détecte les blocages et applique la procédure de résolution adaptée
-✅ Maintient le journal d'état de la story (quelle étape, quel statut)
-✅ Escalade au Scrum Master si un blocage dépasse sa capacité de résolution
+✅ Active chaque agent avec un prompt structuré et tous les inputs requis
+✅ Vérifie que chaque output est complet et bien formé avant d'avancer
+✅ Applique les execution gates — aucune étape ne démarre sans inputs validés
+✅ Gère les fenêtres de parallélisme déclarées (DB + BE + FE, TEST + INFRA)
+✅ Maintient un journal d'état en temps réel pour la story en cours
+✅ Détecte les erreurs, relance l'étape concernée, notifie les agents impactés
+✅ Escalade les blocages non résolus au Scrum Master
+✅ N'avance jamais le pipeline avec un bug P1 non résolu ou un output manquant
 ```
 
 ### Ce que l'Orchestrateur ne fait pas
 
 ```
-❌ Ne prend pas de décisions fonctionnelles — c'est le rôle du PO
-❌ Ne code pas — c'est le rôle des developers
-❌ Ne valide pas les CA — c'est le rôle du QA
-❌ Ne modifie pas les critères d'acceptation en cours de process
+❌ Ne prend pas de décisions produit — c'est le rôle du PO
+❌ N'écrit pas de code d'implémentation — c'est le rôle de la Dev Team
+❌ Ne modifie pas l'output d'un agent — il relance l'étape à la place
 ❌ Ne saute pas d'étapes pour aller plus vite
+❌ Ne résout pas les ambiguïtés de CA par interprétation
+❌ Ne laisse pas commencer le Sprint Planning si l'Analyse Technique est incomplète
 ```
 
 ---
 
 ## 2. Architecture du système
 
-### 2.1 Les 9 agents et leurs documents de référence
+### 2.1 Composition de l'équipe
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                        AI SCRUM TEAM                             │
+│                                                                  │
+│  RÔLE                   ABRÉV.   DOCUMENT DE RÉFÉRENCE          │
+│  ───────────────────    ──────   ────────────────────────────   │
+│  Product Owner          PO       ai/agents/PO.md                │
+│  Scrum Master           SM       ai/agents/SM.md                │
+│  UX Designer            UX       ai/agents/UX.md                │
+│  Frontend Developer     FE       ai/agents/frontend_dev.md      │
+│  Backend Developer      BE       ai/agents/backend_dev.md       │
+│  Database Developer     DB       ai/agents/database_dev.md      │
+│  Testing Developer      TEST     ai/agents/testing_dev.md       │
+│  Infrastructure Dev     INFRA    ai/agents/infra_dev.md         │
+│  QA Engineer            QA       ai/agents/QA.md                │
+│                                                                  │
+│  Orchestrateur          ORCH     ai/agents/scrum_orchestrator.md│
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### 2.2 Principes fondamentaux
+
+**Principe 1 — Gate avant avance**
+Aucun agent n'est activé pour l'étape N+1 tant que l'étape N n'a pas produit un output validé.
+
+**Principe 2 — Inputs avant exécution**
+Aucun agent ne commence sans que tous ses inputs requis soient disponibles. Input manquant → étape bloquée → résolution déclenchée.
+
+**Principe 3 — Outputs immuables**
+Une fois l'output d'une étape validé, il est verrouillé. Aucun autre agent ne peut le modifier directement. Si un agent aval identifie un problème, l'Orchestrateur relance l'étape productrice.
+
+**Principe 4 — Dépendances explicites**
+Toutes les dépendances inter-étapes sont déclarées dans ce document. L'Orchestrateur les applique mécaniquement — il n'existe pas de dépendances implicites.
+
+**Principe 5 — Une relance par erreur**
+À la première erreur, l'Orchestrateur relance l'étape une fois. À la deuxième échec, il escalade au Scrum Master et suspend le pipeline à cette étape.
+
+---
+
+## 3. Vue d'ensemble du pipeline
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           AI SCRUM TEAM                                     │
+│                          PIPELINE DE DÉVELOPPEMENT                          │
 │                                                                             │
-│   PROCESSUS           AGENT                DOCUMENT DE RÉFÉRENCE           │
-│   ─────────           ─────                ──────────────────────           │
-│   Gouvernance         Product Owner (PO)   ai/agents/PO.md                 │
-│                       Scrum Master (SM)    ai/agents/SM.md                 │
-│                                                                             │
-│   Conception          UX Designer (UX)     ai/agents/UX.md                 │
-│                                                                             │
-│   Développement       Frontend Dev (FE)    ai/agents/frontend_dev.md       │
-│                       Backend Dev (BE)     ai/agents/backend_dev.md        │
-│                       Database Dev (DB)    ai/agents/database_dev.md       │
-│                       Testing Dev (TEST)   ai/agents/testing_dev.md        │
-│                       Infra Dev (INFRA)    ai/agents/infra_dev.md          │
-│                                                                             │
-│   Validation          QA Engineer (QA)     ai/agents/QA.md                 │
-│                                                                             │
-│   Coordination        Orchestrateur        ai/agents/scrum_orchestrator.md │
+│  01  STORY RECEIVED              PO soumet la User Story + CA              │
+│       │                                                                     │
+│  02  CLARIFICATION PO            PO valide le périmètre et les CA          │
+│       │                                                                     │
+│  03  ANALYSE TECHNIQUE DEV TEAM  FE + BE + DB + TEST analysent             │
+│       │                          la faisabilité et remontent les questions  │
+│       │                                                                     │
+│  04  SPRINT PLANNING             SM facilite · PO + Dev Team               │
+│       │                          sélectionnent et décomposent en tâches    │
+│       │                                                                     │
+│  05  UX DESIGN                   UX produit les specs écrans               │
+│       │                                                                     │
+│  06  TECHNICAL DESIGN            FE + BE + DB définissent les contrats ────┐
+│       │                          et les décisions d'architecture           │
+│       │                                                                     │
+│       ├──────────────────────────────────────────────┐                     │
+│  07  DATABASE DESIGN (DB)    Migration · RLS · Types  │                    │
+│       │                            SYNC A ────────────►                    │
+│  08  BACKEND IMPL. (BE)      API Routes · Zod · Auth  │                    │
+│       │                            SYNC B ────────────►                    │
+│  09  FRONTEND IMPL. (FE) ◄─────────────────────────── ┘                   │
+│       │                      Composants · Hooks · Pages                    │
+│       │                                                                     │
+│       ├──────────────────────────────────────────┐                         │
+│  10A TESTING (TEST)          Unitaires · Intégr. · RLS                     │
+│  10B INFRA (INFRA)           CI · Preview · Migrations                     │
+│       │                            SYNC C ──────────────►                  │
+│  11  VALIDATION QA               Validation CA sur preview                 │
+│       │                                                                     │
+│  12  STORY DONE                  PO Accepted en Sprint Review              │
 └─────────────────────────────────────────────────────────────────────────────┘
+
+Fenêtres de parallélisme déclarées :
+  Étapes 07 + 08 + 09  →  DB, BE, FE travaillent en parallèle après l'Étape 06
+  Étape 09 (FE)        →  Composants démarrent après l'Étape 05 (UX)
+                           Hooks se connectent après SYNC B (BE)
+  Étapes 10A + 10B     →  TEST et INFRA travaillent en parallèle
 ```
 
-### 2.2 Vue d'ensemble du flux
+### Points de synchronisation
 
-```
-INPUT : User Story + Critères d'acceptation
-         │
-         ▼
-┌────────────────────────────────────────────────────────────┐
-│  ÉTAPE 1 — ANALYSE          PO + SM                        │
-│  Story complète et prête à concevoir ?                     │
-└─────────────────────────┬──────────────────────────────────┘
-                          │ ✅ Story Ready
-                          ▼
-┌────────────────────────────────────────────────────────────┐
-│  ÉTAPE 2 — VALIDATION PO    Product Owner                  │
-│  CA vérifiés, DoD défini, dépendances documentées          │
-└─────────────────────────┬──────────────────────────────────┘
-                          │ ✅ Accepted for Sprint
-                          ▼
-┌────────────────────────────────────────────────────────────┐
-│  ÉTAPE 3 — PLANIFICATION SM  Scrum Master                  │
-│  Sprint Goal, tâches décomposées, agents assignés          │
-└─────────────────────────┬──────────────────────────────────┘
-                          │ ✅ Sprint Backlog Ready
-                          ▼
-┌────────────────────────────────────────────────────────────┐
-│  ÉTAPE 4 — CONCEPTION UX     UX Designer                   │
-│  Fiche(s) écran complète(s) pour tous les états            │
-└─────────────────────────┬──────────────────────────────────┘
-                          │ ✅ Spec UX complète
-                          ▼
-┌────────────────────────────────────────────────────────────┐
-│  ÉTAPE 5 — DB               Database Developer             │
-│  Migrations, RLS policies, types TypeScript                │
-└─────────────────────────┬──────────────────────────────────┘
-         ┌────────────────┘
-         │ ✅ Schéma prêt → SYNC A : Contrat d'interface
-         ▼
-┌────────────────────────┐    ┌─────────────────────────────┐
-│  ÉTAPE 6 — BACKEND     │    │  ÉTAPE 7 — FRONTEND         │
-│  Backend Dev           │    │  Frontend Dev               │
-│  API Routes, Zod,      │    │  Composants, hooks,         │
-│  Auth, isolation       │    │  pages, optimistic UI       │
-└────────────┬───────────┘    └────────────┬────────────────┘
-             │                             │
-             └──────────┬──────────────────┘
-                        │ ✅ SYNC B : PRs ouvertes
-                        ▼
-┌────────────────────────────────────────────────────────────┐
-│  ÉTAPE 8 — TESTS            Testing Developer + INFRA      │
-│  Unitaires, intégration, RLS, preview deployment           │
-└─────────────────────────┬──────────────────────────────────┘
-                          │ ✅ Suite verte + preview validé
-                          ▼
-┌────────────────────────────────────────────────────────────┐
-│  ÉTAPE 9 — VALIDATION QA    QA Engineer                    │
-│  CA vérifiés, rapport de validation, verdict               │
-└─────────────────────────┬──────────────────────────────────┘
-                          │
-              ┌───────────┴────────────┐
-              ▼                        ▼
-     ✅ Ready for Review        ❌ Rejected
-     → Sprint Review            → Retour Étape 6/7
-     → PO Accepted              → Bugs corrigés
-                                 → Re-validation QA
-
-OUTPUT : Story ✅ Accepted en Sprint Review
-```
-
----
-
-## 3. Processus complet — développement d'une User Story
-
-### Format des prompts agents
-
-L'Orchestrateur active chaque agent avec un prompt structuré :
-
-```
-AGENT     : [Nom de l'agent]
-STORY     : [ID] — [Titre]
-CONTEXTE  : [Documents et informations à fournir à l'agent]
-MISSION   : [Ce que l'agent doit produire exactement]
-OUTPUT    : [Format attendu du livrable]
-CONDITION : [Critère de validation avant de passer à l'étape suivante]
-```
-
----
-
-### Étape 1 — Analyse de la User Story
-
-**Rôle responsable** : Orchestrateur (analyse autonome) + Product Owner (si clarification nécessaire)
-
-**Objectif** : Vérifier que la story est suffisamment définie pour être traitée. Détecter les ambiguïtés bloquantes avant d'activer les agents spécialisés.
-
-**Input** :
-```
-- User Story au format standard (ID, titre, récit, points, priorité)
-- Critères d'acceptation
-- Definition of Done
-- Liste des dépendances déclarées
-- Backlog actuel : ai_scrum_backlog.md
-```
-
-**Process d'analyse** :
-```
-L'Orchestrateur vérifie les 7 conditions de la checklist INVEST :
-
-  I — Indépendante    La story peut être développée sans bloquer une autre
-  N — Négociable      Les CA sont des objectifs, pas des specs d'implémentation
-  V — Valuable        La valeur pour l'utilisateur est explicite dans le récit
-  E — Estimable       L'équipe peut estimer l'effort (points définis)
-  S — Small           La story tient dans un sprint (≤ 8 points)
-  T — Testable        Chaque CA est vérifiable par un test ou une observation
-
-  + Règles FoyerApp :
-  [ ] Toute story FOYER/TASK/SHOP a un CA d'isolation multi-tenant
-  [ ] Toute story avec formulaire a un CA de gestion d'erreur réseau
-  [ ] Les stories > 8 points sont décomposées avant de continuer
-```
-
-**Output** :
-```
-CAS A — Story valide :
-  → Rapport d'analyse : "Story [ID] validée — prête pour Étape 2"
-  → Liste des points d'attention pour les agents (ex: "CA-3 implique Realtime")
-
-CAS B — Ambiguïté détectée :
-  → Question précise au PO (1 seule question par cycle)
-  → Format : "Story [ID] — Ambiguïté sur [CA-N] : [question avec options si possible]"
-  → Attente de la réponse PO avant de continuer
-
-CAS C — Story trop grande :
-  → Signal au PO + SM : "Story [ID] dépasse 8 points — décomposition requise"
-  → Liste de sous-stories proposées
-  → Process suspendu jusqu'à décomposition
-```
-
-**Condition de passage** : Story valide (CAS A) — tous les points INVEST satisfaits, CA testables, taille ≤ 8 points.
-
----
-
-### Étape 2 — Validation par le Product Owner
-
-**Rôle responsable** : Product Owner
-
-**Objectif** : Confirmer que la story reflète bien la vision produit, que les CA sont corrects et que la priorité est justifiée.
-
-**Input** :
-```
-- Rapport d'analyse de l'Étape 1
-- User Story complète
-- product_spec.md (vision, personas)
-- Backlog priorisé actuel
-```
-
-**Prompt Orchestrateur → PO** :
-```
-AGENT     : Product Owner
-STORY     : [ID] — [Titre]
-CONTEXTE  : [User Story complète] + [Rapport d'analyse Étape 1]
-MISSION   : Valider que la story est conforme à la vision produit.
-            Vérifier chaque CA :
-            (a) couvre un besoin utilisateur réel
-            (b) est formulé en résultat observable, pas en implémentation
-            (c) inclut au moins un cas d'erreur pour les formulaires et actions réseau
-OUTPUT    : Verdict "Accepted for Sprint" OU liste de corrections + CA révisés
-CONDITION : Tous les CA approuvés par le PO avant de passer à l'Étape 3
-```
-
-**Output attendu** :
-```
-✅ Accepted for Sprint :
-  "Story [ID] — Accepted for Sprint — CA validés : [liste]
-   Notes : [points d'attention pour l'équipe si pertinent]"
-
-❌ Corrections requises :
-  "Story [ID] — CA-[N] à réviser : [texte révisé]
-   Raison : [justification]
-   Retour Étape 1 après révision"
-```
-
-**Condition de passage** : PO prononce "Accepted for Sprint" — tous les CA approuvés.
-
----
-
-### Étape 3 — Planification par le Scrum Master
-
-**Rôle responsable** : Scrum Master
-
-**Objectif** : Décomposer la story en tâches techniques assignées par agent, vérifier les dépendances, définir le Sprint Goal si c'est la première story du sprint.
-
-**Input** :
-```
-- Story validée par le PO (Étape 2)
-- Vélocité de l'équipe (sprints précédents)
-- Dépendances documentées dans le backlog
-- Sprint Backlog courant (stories déjà en cours)
-```
-
-**Prompt Orchestrateur → SM** :
-```
-AGENT     : Scrum Master
-STORY     : [ID] — [Titre]
-CONTEXTE  : [Story validée] + [Sprint Backlog courant] + [Vélocité : X pts]
-MISSION   : 1. Vérifier que les dépendances de la story sont Done
-            2. Décomposer en tâches techniques avec rôle et effort estimé
-            3. Identifier les points de synchronisation entre agents
-            4. Mettre à jour le tableau de bord du sprint
-OUTPUT    : Plan de tâches au format standard + statut des dépendances
-CONDITION : Dépendances résolues, tâches assignées à chaque agent concerné
-```
-
-**Output attendu** :
-```markdown
-## Plan de tâches — [ID Story]
-
-**Dépendances** : [Done ✅ | En attente ⚠️ → story [ID]]
-**Sprint Goal** : [Objectif en 1 phrase si premier sprint]
-
-| Tâche | Description | Agent | Effort | Dépend de |
+| Sync | Émis par | Consommé par | Débloque | Contenu |
 |---|---|---|---|---|
-| T1 | Migrations SQL + RLS | DB  | 2h | — |
-| T2 | Contrat d'API (Sync A) | BE  | 1h | T1 |
-| T3 | API Routes + Zod | BE  | 3h | T1 |
-| T4 | Fiche écran UX | UX  | 2h | — |
-| T5 | Composants React | FE  | 3h | T2, T4 |
-| T6 | Custom hook | FE  | 2h | T2 |
-| T7 | Tests unitaires | TEST | 2h | T5 |
-| T8 | Tests intégration API | TEST | 2h | T3 |
-| T9 | Preview deployment | INFRA| 1h | T3, T5 |
-| T10| Rapport validation QA | QA  | 2h | T7,T8,T9 |
-
-**Sync Points** :
-  SYNC A (Étape 5→6) : DB partage schéma + types TypeScript → BE + FE
-  SYNC B (Étape 7)   : BE partage contrat API → FE
-  SYNC C (Étape 8)   : INFRA confirme preview → TEST peut valider
-```
-
-**Condition de passage** : Dépendances Done ou plan de résolution défini, tâches assignées.
+| SYNC A | DB (Étape 07) | BE + FE | Étapes 08 + 09 | Types TypeScript, statut migration |
+| SYNC B | BE (Étape 08) | FE | Hooks Étape 09 | Contrat API, routes disponibles |
+| SYNC C | TEST + INFRA (Étape 10) | QA | Étape 11 | Résultats tests, URL preview, statut CI |
 
 ---
 
-### Étape 4 — Conception UX
+## 4. Étapes du pipeline
 
-**Rôle responsable** : UX Designer
+### Format de chaque étape
 
-**Objectif** : Produire la fiche écran complète pour tous les écrans impliqués par la story — tous les états, toutes les interactions, adaptation desktop.
-
-**Input** :
 ```
-- Story validée + CA
-- Plan de tâches du SM (tâche T4)
-- ux_design.md (système de design, composants, accessibilité)
-- Inventaire des composants existants
+RESPONSABLE    Qui porte l'étape et produit son output
+INPUT GATE     Ce qui doit exister avant de commencer
+PROCESSUS      Ce que l'agent fait
+OUTPUT GATE    Ce qui doit exister pour que l'étape soit Done
+RÈGLES         Contraintes que l'agent doit respecter
 ```
-
-**Prompt Orchestrateur → UX** :
-```
-AGENT     : UX Designer
-STORY     : [ID] — [Titre]
-CONTEXTE  : [Story complète avec CA] + [Inventaire composants existants]
-MISSION   : Produire la fiche écran pour chaque écran impliqué.
-            Obligatoire pour chaque fiche :
-            - Layout mobile 375px (en premier)
-            - 5 états : loading, vide, nominal, erreur, succès
-            - Zones de tap ≥ 44×44px sur tous les éléments interactifs
-            - Attributs ARIA sur les éléments non-natifs
-            - Adaptation desktop ≥ 768px
-OUTPUT    : Fiche(s) écran au format standard (ux_design.md §3.1)
-CONDITION : Tous les CA couverts par au moins un état, fiche validée via
-            checklist Annexe A du skill ux_design.md
-```
-
-**Output attendu** :
-```
-Fiche écran [Nom de l'écran] — Story [ID]
-
-  Route / composant : [ex: /tasks ou TaskCard]
-  Layout 375px      : [description du haut vers le bas]
-  États             : loading | vide | nominal | erreur | succès
-  Comportements     : [liste des interactions avec déclencheur → résultat]
-  Desktop ≥ 768px   : [delta vs mobile]
-  Composants        : [liste : existants / nouveaux]
-  Accessibilité     : [ratios contraste, aria-labels, focus order]
-```
-
-**Condition de passage** : Fiche écran complète avec les 5 états, tous les CA couverts, checklist UX passante.
-
-> **Si ambiguïté UX détectée** : UX pose 1 question au PO → Orchestrateur transmet → attend réponse → reprend la conception.
 
 ---
 
-### Étape 5 — Conception base de données
+### Étape 01 — Story Received
 
-**Rôle responsable** : Database Developer
+**Responsable** : Orchestrateur (vérification structurelle)
 
-**Objectif** : Créer ou modifier les migrations SQL, activer RLS, écrire les policies, régénérer les types TypeScript — et partager le schéma avec Backend et Frontend (SYNC A).
-
-**Input** :
+**Input gate**
 ```
-- Story validée + CA
-- Plan de tâches du SM (tâche T1)
-- supabase_database.md (schéma actuel, patterns RLS, migrations)
-- src/types/database.ts actuel
-```
-
-**Prompt Orchestrateur → DB** :
-```
-AGENT     : Database Developer
-STORY     : [ID] — [Titre]
-CONTEXTE  : [CA] + [Schéma actuel : supabase_database.md §2] +
-            [Patterns RLS : supabase_database.md §4]
-MISSION   : 1. Identifier les changements de schéma nécessaires
-            2. Créer supabase/migrations/[timestamp]_[nom].sql
-            3. Activer RLS + policies pour les 4 opérations
-            4. Régénérer src/types/database.ts
-            5. Tester la migration localement (supabase db push)
-OUTPUT    : Fichier de migration SQL + types TypeScript mis à jour +
-            résultat des tests RLS (supabase_database.md §4.8)
-CONDITION : Migration idempotente, RLS activé, 4 policies présentes,
-            types régénérés, tests RLS passants
+Requis :
+  ✅ User Story au format standard
+       En tant que [persona], je veux [action] afin de [bénéfice]
+  ✅ Critères d'acceptation (CA) — minimum 3, formulés en comportements observables
+  ✅ ID de story, priorité, estimation en points (Fibonacci : 1, 2, 3, 5, 8)
 ```
 
-**Output attendu** :
+**Processus**
 ```
-Migration : supabase/migrations/[timestamp]_[description].sql
-  → Tables créées / modifiées avec contraintes
-  → RLS activé (ENABLE ROW LEVEL SECURITY)
-  → Policies SELECT / INSERT (WITH CHECK) / UPDATE / DELETE
-  → Indexes de performance créés
-  → Résultats tests RLS : User A ne voit pas les données de User B ✅
+L'Orchestrateur effectue une vérification structurelle :
 
-Types TypeScript : src/types/database.ts mis à jour
+  VÉRIFICATION FORMAT
+  [ ] Story au format narratif standard
+  [ ] Chaque CA est un énoncé de comportement — pas un détail d'implémentation
+  [ ] Story a un ID, une priorité et une estimation ≤ 8 points
 
-Signal SYNC A :
-  "DB → BE + FE : Migration [nom] prête.
-   Nouvelles tables : [liste]
-   Types TypeScript régénérés ✅
-   Policies RLS : SELECT / INSERT / UPDATE / DELETE sur [tables]"
+  VÉRIFICATION COMPLÉTUDE (règles FoyerApp)
+  [ ] Stories touchant des données de foyer (FOYER / TASK / SHOP) ont
+      au moins un CA couvrant l'isolation multi-tenant :
+      "L'utilisateur A ne peut pas voir ni modifier les données du foyer de l'utilisateur B"
+  [ ] Stories avec mutations POST / PATCH / DELETE ont au moins un CA
+      couvrant le comportement en cas d'erreur réseau
+  [ ] Stories avec formulaires ont au moins un CA couvrant les erreurs de validation
+
+  VÉRIFICATION TAILLE
+  [ ] Story ≤ 8 points — si > 8, signaler pour décomposition avant de continuer
 ```
 
-**Condition de passage** : Migration testée localement, RLS activé et testé, types partagés.
+**Output gate**
+```
+Requis :
+  ✅ Rapport de vérification structurelle (pass / liste des flags)
+  ✅ Story marquée RECEIVED dans le journal d'état
+  ✅ Éléments manquants identifiés et mis en file pour la Clarification PO
+```
+
+**Règles d'exécution**
+```
+→ Si une vérification échoue : router vers l'Étape 02 (Clarification PO)
+→ Si story > 8 points : router immédiatement vers l'Étape 02 avec demande de décomposition
+→ Ne pas avancer vers l'Étape 03 tant que la vérification structurelle ne passe pas
+→ Ne pas interpréter les CA ambigus — les signaler, ne pas les résoudre
+```
 
 ---
 
-### Étape 6 — Implémentation backend
+### Étape 02 — Clarification Product Owner
 
-**Rôle responsable** : Backend Developer
+**Responsable** : Product Owner
 
-**Objectif** : Créer les API Routes, les schémas Zod, et appliquer la chaîne de sécurité complète sur chaque route. Publier le contrat d'API pour le Frontend (SYNC B).
-
-**Input** :
+**Input gate**
 ```
-- Story validée + CA
-- Plan de tâches du SM (tâches T2, T3)
-- Signal SYNC A du DB (schéma + types TypeScript)
-- nextjs_development.md §5 (structure API Routes)
-- supabase_database.md §3.2 (pattern d'appartenance)
-- Contrat d'API attendu par le FE (si transmis en Étape 3)
+Requis :
+  ✅ Rapport de vérification structurelle de l'Étape 01
+  ✅ Liste des flags (CA manquants, ambiguïtés, problème de taille)
 ```
 
-**Prompt Orchestrateur → BE** :
+**Processus**
+L'Orchestrateur active le PO avec un prompt structuré :
+
 ```
-AGENT     : Backend Developer
-STORY     : [ID] — [Titre]
-CONTEXTE  : [CA] + [Types DB depuis SYNC A] +
-            [Patterns API : nextjs_development.md §5.1] +
-            [Pattern membership : supabase_database.md §3.2]
-MISSION   : 1. Créer les schémas Zod dans src/lib/validations/
-            2. Créer les API Routes dans src/app/api/v1/
-               Chaque route applique : validation → auth → membership → DB → réponse
-            3. Publier le contrat d'API (SYNC B) pour le Frontend
-OUTPUT    : Fichiers route.ts + schémas Zod + contrat d'API documenté
-CONDITION : next build passe, TypeScript strict, chaîne sécurité complète,
-            SERVICE_ROLE_KEY absente du bundle client
+AGENT    : Product Owner
+STORY    : [ID] — [Titre]
+CONTEXTE : [Texte complet de la story + liste des CA]
+PROBLÈMES: [Liste exacte des flags de l'Étape 01]
+MISSION  : Résoudre chaque flag.
+           Pour chaque CA : confirmer qu'il décrit un comportement observable,
+           pas une instruction d'implémentation. Ajouter les CA manquants.
+           Décomposer la story si > 8 points.
+OUTPUT   : Story révisée + liste de CA révisée + décomposition si nécessaire
+GATE     : Le PO doit explicitement déclarer "Clarification terminée"
+           avant que le pipeline avance
 ```
 
-**Output attendu** :
+**Output gate**
 ```
-Fichiers produits :
-  src/lib/validations/[domaine].ts  → schémas Zod
-  src/app/api/v1/[ressource]/route.ts → GET, POST
-  src/app/api/v1/[ressource]/[id]/route.ts → PATCH, DELETE
-
-Signal SYNC B (contrat d'API) :
-  "BE → FE : Contrat API — Story [ID]
-   GET  /api/v1/[ressource]?householdId=UUID → [Type][] (200)
-   POST /api/v1/[ressource] body: {...} → [Type] (201)
-   PATCH /api/v1/[ressource]/:id → [Type] (200)
-   Erreurs : 400 | 401 | 403 | 422 | 500"
+Requis :
+  ✅ Tous les flags résolus
+  ✅ Liste de CA révisée — chaque CA formulé comme un comportement observable
+  ✅ CA d'isolation multi-tenant présent (stories household)
+  ✅ CA d'erreur réseau présent (stories avec mutations)
+  ✅ Story ≤ 8 points (ou décomposée en sous-stories chacune ≤ 8 points)
+  ✅ Validation explicite du PO : "Clarification terminée — story prête pour la Dev Team"
 ```
 
-**Condition de passage** : `next build` propre, tous les codes HTTP corrects, contrat SYNC B publié.
+**Règles d'exécution**
+```
+→ Une question par cycle de clarification — ne pas grouper les ambiguïtés
+→ Proposer des options quand possible :
+  "Le CA-3 doit-il utiliser un optimistic update (immédiat) ou un
+  server-confirmed update (après réponse API) ?"
+→ Pipeline suspendu à cette étape jusqu'à la validation PO
+→ Si le PO est indisponible plus d'un cycle : escalader au SM
+→ Aucun CA ne peut être résolu par l'Orchestrateur par hypothèse
+```
 
 ---
 
-### Étape 7 — Implémentation frontend
+### Étape 03 — Analyse Technique Dev Team
 
-**Rôle responsable** : Frontend Developer
+**Responsable** : FE · BE · DB · TEST (collectivement — la Dev Team)
 
-**Objectif** : Implémenter les composants React, les custom hooks avec optimistic updates, et les pages — en respectant exactement la fiche écran UX et le contrat API Backend.
+> **Note Scrum** : En Scrum réel, la Dev Team réalise l'analyse technique et remonte ses questions *avant* le Sprint Planning — pas après. Cette étape formalise cette pratique. Le SM ne conduit pas cette analyse : la Dev Team le fait. Le SM facilite ; la Dev Team évalue.
 
-**Input** :
+**Input gate**
 ```
-- Story validée + CA
-- Fiche(s) écran UX (Étape 4)
-- Contrat d'API Backend (SYNC B de l'Étape 6)
-- Types TypeScript (SYNC A de l'Étape 5)
-- nextjs_development.md §3 + §4 (composants, hooks)
-- ux_design.md §3.5 (inventaire des composants existants)
-```
-
-**Prompt Orchestrateur → FE** :
-```
-AGENT     : Frontend Developer
-STORY     : [ID] — [Titre]
-CONTEXTE  : [Fiche écran UX complète] + [Contrat API depuis SYNC B] +
-            [Types TypeScript depuis SYNC A]
-MISSION   : 1. Implémenter les composants selon la fiche écran
-               (tous les états : loading, vide, nominal, erreur, succès)
-            2. Créer les custom hooks qui consomment les API Routes
-               (optimistic update + rollback sur les actions fréquentes)
-            3. Connecter les pages aux composants et hooks
-            4. Vérifier les zones de tap ≥ 44×44px + aria-labels
-OUTPUT    : Composants .tsx + hooks .ts + page.tsx
-CONDITION : next build passe, TypeScript strict, mobile 375px vérifié,
-            tous les états implémentés, aria-labels présents
+Requis :
+  ✅ Story clarifiée + CA de l'Étape 02
+  ✅ Schéma actuel : supabase_database.md §2
+  ✅ Vue d'ensemble architecture : docs/architecture/architecture_overview.md
+  ✅ Inventaire des composants : ux_design.md §3.5
+  ✅ Sprint backlog courant (stories en cours)
 ```
 
-**Output attendu** :
+**Processus**
 ```
-Fichiers produits :
-  src/components/[domaine]/[Composant].tsx  → composants
-  src/hooks/use[Domaine].ts                 → hook avec optimistic
-  src/app/(app)/[route]/page.tsx            → page assemblée
+Chaque membre de la Dev Team analyse la story depuis la perspective de son domaine :
 
-Vérifications self-reported :
-  ✅ next build propre
-  ✅ Tous les états implémentés (loading / vide / nominal / erreur / succès)
-  ✅ Optimistic update + rollback sur [actions concernées]
-  ✅ aria-labels sur les boutons icônes
-  ✅ Zones de tap ≥ 44×44px vérifiées DevTools
-```
+  ANALYSE FE
+  [ ] Quels écrans sont impactés ou doivent être créés ?
+  [ ] Quels composants existent, lesquels doivent être créés ?
+  [ ] Un CA nécessite-t-il Realtime ou un optimistic update ?
+  [ ] Un défi d'accessibilité nécessite-t-il un alignement UX anticipé ?
 
-**Condition de passage** : `next build` propre, tous les états présents, mobile vérifié.
+  ANALYSE BE
+  [ ] Quelles routes API sont requises (GET / POST / PATCH / DELETE) ?
+  [ ] Un CA nécessite-t-il une vérification de rôle admin ?
+  [ ] Logique de validation non standard (codes d'invitation, unicité) ?
 
-> **Parallélisme** : Les Étapes 6 et 7 démarrent en parallèle dès le SYNC A. Le Frontend attend le SYNC B (contrat API) pour connecter les hooks aux vraies routes — il peut implémenter les composants et les mocks en attendant.
+  ANALYSE DB
+  [ ] La story nécessite-t-elle de nouvelles tables, colonnes ou migrations ?
+  [ ] De nouvelles policies RLS sont-elles nécessaires ?
+  [ ] Les indexes existants sont-ils suffisants pour les patterns de requêtes attendus ?
 
----
+  ANALYSE TEST
+  [ ] Quels CA nécessitent des tests d'intégration vs unitaires ?
+  [ ] L'isolation RLS multi-tenant est-elle testable avec le setup de test actuel ?
+  [ ] Un scénario nécessite-t-il une validation manuelle uniquement ?
 
-### Étape 8 — Tests automatisés
-
-**Rôle responsable** : Testing Developer + Infrastructure Developer (en parallèle)
-
-**Objectif** : Écrire et exécuter la suite complète de tests — unitaires, intégration, RLS — et déployer le preview.
-
-**8A — Testing Developer**
-
-**Input** :
-```
-- Story + CA
-- Composants FE produits (Étape 7)
-- API Routes BE produites (Étape 6)
-- Migration DB + policies RLS (Étape 5)
-- testing_quality.md §3 + §4 (patterns de tests)
+  REGISTRE DES RISQUES
+  [ ] Risques de dépendances inter-stories
+  [ ] Dette technique connue pouvant impacter cette story
+  [ ] CA ambigus d'un point de vue technique — signaler au PO
 ```
 
-**Prompt Orchestrateur → TEST** :
+**Output gate**
 ```
-AGENT     : Testing Developer
-STORY     : [ID] — [Titre]
-CONTEXTE  : [CA] + [Composants disponibles] + [Contrat API]
-MISSION   : 1. Tests unitaires : composants (RTL) + hooks + schémas Zod
-            2. Tests d'intégration : API Routes (auth, isolation, nominal)
-            3. Tests RLS : isolation cross-foyer en SQL
-            4. Vérifier couverture ≥ 70% sur le code métier
-OUTPUT    : Fichiers .test.tsx / .test.ts / .sql — suite verte
-CONDITION : Tous les tests passants, couverture ≥ 70%,
-            chaque CA couvert par au moins un test
-```
-
-**8B — Infrastructure Developer**
-
-**Prompt Orchestrateur → INFRA** :
-```
-AGENT     : Infrastructure Developer
-STORY     : [ID] — [Titre]
-CONTEXTE  : PR ouverte sur feature/[story-id]
-MISSION   : 1. Vérifier que le pipeline CI passe (type-check, lint, tests, build)
-            2. Appliquer la migration sur l'environnement preview
-            3. Confirmer que le preview deployment est accessible
-OUTPUT    : URL du preview deployment + confirmation migrations appliquées
-CONDITION : CI verte, migration preview OK, URL preview accessible
+Requis :
+  ✅ Rapport d'Analyse Technique contenant :
+      - Évaluation FE (écrans, composants, hooks nécessaires)
+      - Évaluation BE (routes, règles auth, logique de validation)
+      - Évaluation DB (changements de schéma, migrations, indexes)
+      - Évaluation TEST (stratégie de test par CA)
+      - Risques et questions ouvertes pour le PO (si applicable)
+  ✅ Estimation confirmée ou révisée (avec justification si révisée)
+  ✅ Dépendances inter-stories déclarées
+  ✅ Toute ambiguïté de CA signalée au PO avant le Sprint Planning
 ```
 
-**Output attendu (SYNC C)** :
-```
-TEST → "Suite complète verte : [N] tests passants — couverture [X]%"
-INFRA → "Preview disponible : https://foyerapp-[slug].vercel.app
-         Migrations appliquées ✅ — prêt pour validation QA"
-```
-
-**Condition de passage** : Suite de tests verte + preview accessible (les deux requis).
-
----
-
-### Étape 9 — Validation QA
-
-**Rôle responsable** : QA Engineer
-
-**Objectif** : Valider chaque critère d'acceptation sur le preview — automatisés et manuels. Prononcer le verdict final avant Sprint Review.
-
-**Input** :
-```
-- Story + CA exacts
-- URL du preview deployment (SYNC C)
-- Rapport de tests TEST (Étape 8)
-- testing_quality.md §5 (processus de validation)
-- Fiche écran UX (référence pour les états visuels)
-```
-
-**Prompt Orchestrateur → QA** :
-```
-AGENT     : QA Engineer
-STORY     : [ID] — [Titre]
-CONTEXTE  : [CA complets] + [URL preview : https://...] +
-            [Résultats tests TEST] + [Fiche écran UX]
-MISSION   : Valider chaque CA sur le preview :
-            1. Exécuter les CA un par un — noter Pass ✅ ou Fail ❌
-            2. Tester les cas limites (mobile 375px, offline, auth expirée)
-            3. Vérifier l'isolation multi-tenant (si story avec données foyer)
-            4. Rédiger le rapport de validation au format standard
-            5. Prononcer "Ready for Review" ou "Rejected"
-OUTPUT    : Rapport de validation complet (QA.md §4.1)
-CONDITION : Rapport produit avec verdict explicite
-```
-
-**Output — CAS A : Ready for Review** :
+**Format du Rapport d'Analyse Technique**
 ```markdown
-## Rapport de validation — [ID] — [Titre]
+## Analyse Technique — [ID Story] — [Titre]
 
-**Décision : ✅ Ready for Review**
+### Frontend
+- Écrans impactés : [liste]
+- Composants à créer : [liste]
+- Composants à réutiliser : [liste]
+- Optimistic update requis : Oui / Non — sur [action]
+- Realtime requis : Oui / Non
 
-| CA | Critère | Résultat |
-|---|---|---|
-| CA-1 | [texte] | ✅ Pass |
-| CA-2 | [texte] | ✅ Pass |
-| CA-3 | [texte] | ✅ Pass |
+### Backend
+- Routes API requises : [MÉTHODE /api/v1/route]
+- Routes admin uniquement : [liste ou Aucune]
+- Logique de validation spéciale : [description ou Aucune]
 
-Tests automatisés : [N] passants / [N] total — Couverture [X]%
-Isolation RLS : ✅ Vérifié
-Mobile 375px : ✅ Vérifié
-Erreur réseau : ✅ Vérifié
+### Database
+- Nouvelles tables : [liste ou Aucune]
+- Nouvelles colonnes : [table.colonne — type — raison]
+- Nouvelles migrations attendues : [nombre]
+- Nouvelles policies RLS nécessaires : Oui / Non
+- Changements d'indexes : [description ou Aucun]
 
-Régression : ✅ Aucune régression détectée
-Bugs : Aucun
+### Testing
+- CA nécessitant des tests d'intégration : [numéros CA]
+- CA nécessitant un test d'isolation RLS : [numéros CA]
+- CA nécessitant une validation manuelle uniquement : [numéros CA]
+
+### Risques
+- [Description du risque — probabilité — mitigation]
+
+### Questions ouvertes pour le PO
+- [Question précise avec options]
+
+### Estimation
+- Confirmée : [N] points / Révisée à : [N] points — raison : [...]
 ```
 
-**Output — CAS B : Rejected** :
+**Règles d'exécution**
+```
+→ Chaque membre de la Dev Team contribue à sa section de domaine
+→ Les questions pour le PO doivent être remontées ICI — pas découvertes en cours d'implémentation
+→ Si une dépendance sur une autre story est identifiée et que cette story n'est pas Done :
+  signaler au SM immédiatement — ne pas continuer le pipeline
+→ Si l'estimation change significativement (±3 points) : signaler au SM avant le Sprint Planning
+→ L'Analyse Technique est le travail propre de la Dev Team — le SM ne la produit pas
+```
+
+---
+
+### Étape 04 — Sprint Planning
+
+**Responsable** : Scrum Master (facilite) · Product Owner (valide l'objectif) · Dev Team (s'engage)
+
+> **Note Scrum** : Le SM **facilite** le Sprint Planning — il ne planifie pas le sprint. Le Sprint Planning produit deux choses : (1) un Sprint Goal, porté par le PO, et (2) un Sprint Backlog avec décomposition en tâches, porté par la Dev Team.
+
+**Input gate**
+```
+Requis :
+  ✅ Backlog priorisé avec stories READY
+  ✅ Rapports d'Analyse Technique pour toutes les stories candidates (Étape 03)
+  ✅ Vélocité de l'équipe sur les 2 derniers sprints
+  ✅ Capacité de l'équipe pour ce sprint
+  ✅ Dépendances inter-stories résolues
+```
+
+**Processus**
+```
+Le SM facilite trois activités :
+
+  ACTIVITÉ 1 — Définition du Sprint Goal (PO mène)
+    Le PO propose un Sprint Goal aligné avec la vision produit
+    Le SM s'assure qu'il s'agit d'un objectif cohérent unique, pas d'une liste de tâches
+    La Dev Team confirme que l'objectif est atteignable avec les stories sélectionnées
+
+  ACTIVITÉ 2 — Sélection des stories (Dev Team s'engage)
+    La Dev Team sélectionne les stories depuis le backlog priorisé
+    Total de points ≤ vélocité × 0.9 (marge de sécurité de 10%)
+    Seules les stories READY sont éligibles (CA complets, Analyse Technique faite)
+    Le SM fait respecter le timebox (maximum 2 heures)
+
+  ACTIVITÉ 3 — Décomposition en tâches (Dev Team produit)
+    La Dev Team décompose chaque story sélectionnée en tâches
+    Chaque tâche : un agent responsable, durée estimée ≤ 4 heures
+    Les tâches listent explicitement leurs dépendances et les sync points
+    Le SM enregistre l'output — le SM ne le produit pas
+```
+
+**Output gate**
+```
+Requis :
+  ✅ Sprint Goal — 1–2 phrases, formulation en valeur utilisateur, validé par le PO
+  ✅ Sprint Backlog — liste ordonnée des stories sélectionnées, toutes READY
+  ✅ Pour chaque story : décomposition en tâches avec agent, estimation, dépendances
+  ✅ Sync points déclarés (SYNC A, B, C) — voir §3
+  ✅ SM confirme : "Sprint Planning terminé — le sprint commence"
+```
+
+**Format du Sprint Backlog (par story)**
 ```markdown
-## Rapport de validation — [ID] — [Titre]
+### [ID Story] — [Titre] — [N] points
 
-**Décision : ❌ Rejected**
+| Tâche | Description | Agent | Estimé | Dépend de |
+|-------|-------------|-------|--------|-----------|
+| T01   | Migration SQL + policies RLS | DB   | 2h | — |
+| T02   | Specs écran UX (tous les états) | UX | 2h | — |
+| T03   | Contrat d'API — SYNC A | BE   | 1h | T01 |
+| T04   | API Routes + schémas Zod | BE   | 3h | T01 |
+| T05   | Technical Design (contrats) | FE+BE+DB | 1h | T01, T02 |
+| T06   | Composants React | FE   | 3h | T02, T03 |
+| T07   | Custom hooks + optimistic UI | FE   | 2h | T03 |
+| T08   | Tests unitaires (composants/hooks) | TEST | 2h | T06, T07 |
+| T09   | Tests d'intégration (API routes) | TEST | 2h | T04 |
+| T10   | Tests RLS isolation | TEST | 1h | T01 |
+| T11   | Preview deployment + CI | INFRA | 1h | T04, T06 |
+| T12   | Validation QA sur preview | QA   | 2h | T08–T11 |
 
-| CA | Critère | Résultat |
-|---|---|---|
-| CA-1 | [texte] | ✅ Pass |
-| CA-2 | [texte] | ❌ Fail |
-| CA-3 | [texte] | ✅ Pass |
-
-Bugs :
-  BUG-[N] (P[sévérité]) — [titre] — CA-[N] violé
-  Étapes de reproduction : [...]
+Sync Points :
+  SYNC A : T01 Done → DB partage types TypeScript → BE + FE débloqués
+  SYNC B : T03 Done → BE partage contrat API → Hooks FE peuvent se connecter
+  SYNC C : T08–T11 Done → TEST + INFRA signalent QA → Étape 11 débloquée
 ```
 
-**Condition de passage** :
-- CAS A → Story passe en Sprint Review → PO prononce "Accepted ✅"
-- CAS B → Orchestrateur retourne à l'Étape 6 ou 7 selon le bug → re-validation QA
+**Règles d'exécution**
+```
+→ Le SM facilite — il ne sélectionne pas les stories, ne décompose pas les tâches, ne fixe pas les estimations
+→ La Dev Team possède la décomposition en tâches — aucune estimation ne peut être imposée
+→ Story non READY → le SM l'exclut du Sprint Backlog
+→ Le Sprint Goal doit être formulé en valeur utilisateur, pas comme une checklist technique
+→ Le Sprint Planning se ferme seulement après que le SM confirme tous les outputs présents
+→ Si l'Analyse Technique est manquante pour une story candidate : le SM bloque sa sélection
+```
 
 ---
 
-## 4. Règles de coordination
+### Étape 05 — UX Design
 
-### 4.1 Règles de séquencement
+**Responsable** : UX Designer
 
+**Input gate**
 ```
-Séquence obligatoire :
-  Étape 1 → 2 → 3 → 4 ──► 5 ──► 6 ║ 7 ──► 8 ──► 9
-
-  Les Étapes 6 et 7 démarrent en parallèle après SYNC A (Étape 5)
-  L'Étape 7 attend SYNC B (contrat API) pour connecter les hooks
-  L'Étape 8 démarre quand 6 ET 7 sont complètes
-  L'Étape 9 démarre quand 8A (tests) ET 8B (preview) sont complètes
-
-Aucune étape ne peut être sautée :
-  → Même si la story "semble simple"
-  → Même si "c'est juste un fix de style"
-  → Les étapes légères (2, 3, 4) prennent 10-30 minutes — elles valent le coup
+Requis :
+  ✅ Story clarifiée + CA (Étape 02)
+  ✅ Analyse Technique — section FE (Étape 03)
+  ✅ Inventaire des composants : ux_design.md §3.5
+  ✅ Système de design : ux_design.md §3.2–§3.4
+  ✅ Structure de navigation : ux_design.md §4.1
 ```
 
-### 4.2 Les 4 Sync Points
-
+**Processus**
 ```
-SYNC A — DB → BE + FE (fin Étape 5)
-  Déclencheur : Migration testée localement + types TypeScript régénérés
-  Contenu      : Noms des tables, colonnes, types, policies actives
-  Requis par   : BE pour écrire les API Routes, FE pour typer les hooks
-  Format       : Message structuré avec liste des changements
+L'UX Designer produit une spec écran pour chaque écran impliqué dans la story.
 
-SYNC B — BE → FE (début Étape 7)
-  Déclencheur : Contrat d'API défini (routes, params, types de retour, codes HTTP)
-  Contenu      : GET/POST/PATCH/DELETE avec signatures complètes
-  Requis par   : FE pour connecter les hooks aux vraies API Routes
-  Format       : Contrat TypeScript documenté (backend_dev.md §4.5)
-
-SYNC C — TEST + INFRA → QA (fin Étape 8)
-  Déclencheur : Suite de tests verte ET preview deployment accessible
-  Contenu      : URL preview + confirmation migrations + résultats de tests
-  Requis par   : QA pour démarrer la validation sur le preview
-  Format       : Message avec URL + statut
-
-SYNC D — QA → SM + PO (fin Étape 9)
-  Déclencheur : Rapport de validation QA avec verdict
-  Contenu      : Rapport complet + "Ready for Review" ou "Rejected"
-  Requis par   : SM pour mettre à jour le tableau de bord, PO pour le Sprint Review
-  Format       : Rapport standard (QA.md §4.1)
+OBLIGATOIRE POUR CHAQUE SPEC ÉCRAN
+  → Route ou nom du composant
+  → Layout mobile 375px (description haut-bas, composants, classes Tailwind clés)
+  → Les 5 états : loading · vide · nominal · erreur · succès
+  → Carte des interactions : déclencheur → résultat observable
+  → Adaptation desktop ≥ 768px (delta par rapport au mobile uniquement)
+  → Composants utilisés (existants) + composants à créer (nouveaux)
+  → Accessibilité : ratios de contraste, aria-labels, ordre de focus, zones de tap ≥ 44×44px
 ```
 
-### 4.3 Règles de parallélisme
-
+**Output gate**
 ```
-✅ Étapes pouvant se faire en parallèle :
-   Étapes 4 (UX) et 5 (DB) peuvent démarrer simultanément après Étape 3
-   Étapes 6 (BE) et 7 (FE, partie composants) peuvent démarrer après SYNC A
-   Étapes 8A (Testing) et 8B (Infra preview) démarrent simultanément
-
-❌ Ce qui ne peut pas être parallélisé :
-   Étape 5 doit précéder Étape 6 (BE a besoin des types DB)
-   Étape 6 contrat (SYNC B) doit précéder la connexion des hooks FE
-   Étape 8 (les deux parties) doit précéder Étape 9 (QA)
+Requis :
+  ✅ Une spec écran par écran impliqué, au format standard (ux_design.md §3.1)
+  ✅ Les 5 états spécifiés pour chaque écran
+  ✅ Toutes les zones de tap ≥ 44×44px
+  ✅ Tous les éléments interactifs non-natifs ont des définitions d'aria-label
+  ✅ Adaptation desktop spécifiée
+  ✅ Nouveaux composants documentés dans l'inventaire
+  ✅ Checklist de ux_design.md Annexe A passante
 ```
 
-### 4.4 Règles de communication inter-agents
-
+**Règles d'exécution**
 ```
-Format des signaux de l'Orchestrateur vers les agents :
-  "[ORCHESTRATEUR → AGENT] STORY [ID] ÉTAPE [N] : [instruction]"
-
-Format des signaux des agents vers l'Orchestrateur :
-  "[AGENT] STORY [ID] ÉTAPE [N] : [DONE ✅ | BLOCKED ⚠️ | FAILED ❌] — [détail]"
-
-Délais attendus :
-  Signal SYNC (A, B, C, D) → immédiat dans le cycle courant
-  Réponse à une question de clarification → avant la prochaine étape
-  Rapport de validation QA → dans le même cycle que la demande
-
-Règle de transparence :
-  L'Orchestrateur tient à jour le journal d'état de la story (§4.5)
-  Tout blocage est visible par le SM dès sa détection
+→ Le mobile-first est absolu — le layout 375px est toujours conçu en premier
+→ Le desktop est un delta, pas une refonte
+→ Si un CA implique un comportement non couvert par l'inventaire existant :
+  poser 1 question de clarification au PO avant de produire la spec
+→ Si l'Analyse Technique FE signale un défi d'accessibilité :
+  la spec UX doit l'adresser explicitement
+→ La spec UX est verrouillée une fois que l'Étape 06 (Technical Design) la valide
+  Si un agent aval identifie un problème : l'Orchestrateur relance l'Étape 05
+  L'agent aval ne modifie pas la spec directement
 ```
 
-### 4.5 Journal d'état de la story
+---
+
+### Étape 06 — Technical Design
+
+**Responsable** : FE · BE · DB (conjointement)
+
+> **Objectif** : Avant que l'implémentation parallèle commence, la Dev Team s'aligne sur les contrats techniques qui gouverneront son travail en parallèle. Cette étape prévient la "surprise SYNC B" où le FE construit des composants contre un contrat API que le BE modifie ensuite.
+
+**Input gate**
+```
+Requis :
+  ✅ Specs écran UX (Étape 05)
+  ✅ Rapport d'Analyse Technique (Étape 03)
+  ✅ Schéma DB actuel + types : supabase_database.md §2
+  ✅ Décomposition des tâches du sprint (Étape 04)
+```
+
+**Processus**
+```
+Les trois agents d'implémentation produisent conjointement un document Technical Design.
+
+SECTION 1 — CONTRAT D'API (BE + FE)
+  BE propose les routes, méthodes HTTP, types requête/réponse, codes d'erreur
+  FE valide que le contrat satisfait chaque CA nécessitant des données
+  Les deux agents signent le contrat avant le début de l'implémentation
+  Ce contrat est FIGÉ une fois signé — les changements nécessitent un redémarrage de l'Étape 06
+
+SECTION 2 — MODÈLE DE DONNÉES (DB + BE)
+  DB propose les structures de tables, types de colonnes, contraintes FK, approche RLS
+  BE valide que le modèle supporte tous les patterns de requêtes requis
+  Les deux agents signent avant que DB écrive la migration
+
+SECTION 3 — CONTRATS DE COMPOSANTS (FE)
+  FE déclare l'arbre de composants : lesquels créer, leurs props, leurs états
+  BE confirme quelles formes de données les composants recevront
+  Donne à TEST les informations nécessaires pour préparer les fixtures de test
+
+SECTION 4 — CALENDRIER DES SYNC POINTS
+  Les trois agents s'accordent explicitement sur :
+    SYNC A : quand DB émettra les types (après que la migration passe localement)
+    SYNC B : quand BE émettra le contrat API (après que les routes sont implémentées)
+    (SYNC C est géré à l'Étape 10)
+```
+
+**Output gate**
+```
+Requis :
+  ✅ Document Technical Design avec 4 sections complètes
+  ✅ Contrat d'API signé par BE et FE
+  ✅ Modèle de données signé par DB et BE
+  ✅ Contrats de composants déclarés par FE
+  ✅ Calendrier SYNC A et SYNC B convenu
+  ✅ Les trois agents confirment explicitement : "Technical Design approuvé"
+```
+
+**Format du document Technical Design**
+```markdown
+## Technical Design — [ID Story] — [Titre]
+
+### 1. Contrat d'API
+
+| Méthode | Route | Auth | Membership | Body / Params | Succès | Erreurs |
+|---------|-------|------|------------|---------------|--------|---------|
+| GET  | /api/v1/[res]?householdId=UUID | ✅ | ✅ | — | 200 + Type[] | 400·401·403·500 |
+| POST | /api/v1/[res] | ✅ | ✅ | {champ, householdId} | 201 + Type | 401·403·422·500 |
+| PATCH | /api/v1/[res]/:id | ✅ | ✅ | {champ?} | 200 + Type | 400·401·403·422·500 |
+
+Types TypeScript de retour :
+  [Type] = { id: UUID, household_id: UUID, ... }
+
+Validation : BE ✅  FE ✅
+
+### 2. Modèle de données
+
+Tables impliquées : [table1], [table2]
+
+Nouvelles colonnes :
+  [table].[colonne] — [type] NOT NULL — raison : [...]
+
+Nouvelles contraintes :
+  [table].[contrainte] — raison : [...]
+
+Approche RLS :
+  [table] : accès niveau membre (SELECT / INSERT / UPDATE / DELETE)
+  [table] : admin uniquement pour [opération]
+
+Validation : DB ✅  BE ✅
+
+### 3. Contrats de composants
+
+| Composant | Nouveau/Existant | Props | États |
+|-----------|----------------|-------|-------|
+| [Nom]Card | Nouveau | item, onToggle, className | loading, nominal, erreur |
+| [Nom]Form | Nouveau | onSubmit, onCancel | défaut, loading, erreur |
+| EmptyState | Existant | title, description, cta | — |
+
+### 4. Calendrier des Sync Points
+
+SYNC A : DB émet les types après que la migration locale passe — estimé [Jour X]
+SYNC B : BE émet le contrat API après l'implémentation des routes — estimé [Jour X]
+
+Validation : FE ✅  BE ✅  DB ✅
+```
+
+**Règles d'exécution**
+```
+→ Aucun agent d'implémentation ne commence à coder avant l'approbation du Technical Design
+→ Le contrat d'API est immuable une fois signé — si BE doit le changer :
+  l'Orchestrateur relance l'Étape 06 et notifie FE
+→ Si FE et BE ne peuvent pas s'accorder sur un détail de contrat :
+  l'Orchestrateur escalade au SM → le SM facilite la résolution en un cycle
+→ Le Technical Design est un document de la Dev Team — le SM ne le produit ni ne le modifie
+→ L'agent TEST reçoit le Technical Design pour préparer les fixtures avant l'Étape 10
+```
+
+---
+
+### Étape 07 — Database Design
+
+**Responsable** : Database Developer
+
+**Input gate**
+```
+Requis :
+  ✅ Technical Design — section Modèle de Données (Étape 06)
+  ✅ Schéma actuel : supabase_database.md §2
+  ✅ Patterns RLS : supabase_database.md §4
+  ✅ src/types/database.ts actuel
+```
+
+**Processus**
+```
+DB crée une migration SQL versionnée couvrant :
+  1. Création ou modification de table (avec toutes les contraintes)
+  2. Activation RLS : ALTER TABLE ... ENABLE ROW LEVEL SECURITY
+  3. Quatre policies : SELECT · INSERT (WITH CHECK) · UPDATE · DELETE
+  4. Indexes de performance (correspondant aux patterns de requêtes du contrat API)
+  5. Triggers : updated_at, handle_* si applicable
+  6. Test local : supabase db push — doit passer sans erreur
+  7. Test d'isolation RLS : l'utilisateur A ne peut pas accéder aux données du foyer de l'utilisateur B
+  8. Régénération des types TypeScript : supabase gen types typescript --local
+```
+
+**Output gate**
+```
+Requis :
+  ✅ Fichier de migration : supabase/migrations/[YYYYMMDDHHMMSS]_[nom].sql
+  ✅ Migration idempotente (IF NOT EXISTS, OR REPLACE, DROP POLICY IF EXISTS)
+  ✅ household_id NOT NULL sur toute nouvelle table de données métier
+  ✅ RLS activé + 4 policies présentes
+  ✅ Indexes créés pour les patterns de requêtes connus
+  ✅ Test de migration locale passant (supabase db push)
+  ✅ Test d'isolation RLS passant
+  ✅ src/types/database.ts régénéré et commité
+  ✅ Signal SYNC A émis vers BE et FE
+```
+
+**Format du signal SYNC A**
+```
+DB → BE + FE  |  SYNC A  |  Story [ID]
+────────────────────────────────────────────────────────
+Migration appliquée localement : supabase/migrations/[fichier]
+Nouvelles tables : [liste ou Aucune]
+Tables modifiées : [liste ou Aucune]
+Types TypeScript : src/types/database.ts mis à jour — commit [hash]
+Test isolation RLS : PASSÉ
+────────────────────────────────────────────────────────
+BE et FE peuvent maintenant procéder à l'implémentation.
+```
+
+**Règles d'exécution**
+```
+→ SYNC A ne doit pas être émis avant que la migration locale ET les tests RLS passent
+→ Toute table de données métier DOIT avoir household_id NOT NULL — sans exception
+→ Les policies INSERT doivent utiliser WITH CHECK — pas seulement USING
+→ Les fonctions SECURITY DEFINER doivent inclure SET search_path = public
+→ Pas de modifications directes via le Dashboard — tout par fichiers de migration
+→ Les changements de schéma breaking nécessitent un préavis d'un cycle vers BE et FE
+   et une migration intermédiaire backward-compatible
+```
+
+---
+
+### Étape 08 — Backend Implementation
+
+**Responsable** : Backend Developer
+
+**Input gate**
+```
+Requis :
+  ✅ SYNC A reçu (Étape 07) — types TypeScript disponibles
+  ✅ Technical Design — Contrat d'API (Étape 06)
+  ✅ Story clarifiée + CA (Étape 02)
+```
+
+**Processus**
+```
+BE implémente toutes les routes API déclarées dans le Technical Design.
+
+CHAÎNE DE SÉCURITÉ OBLIGATOIRE — chaque route protégée, dans cet ordre :
+  1. Validation des inputs (Zod — params, searchParams, body)
+  2. Authentification (supabase.auth.getUser() — 401 si manquant)
+  3. Vérification membership foyer (household_members — 403 si non-membre)
+  4. Vérification rôle admin (si requis par CA — 403 si pas admin)
+  5. Opération DB (typée via les types Database)
+  6. Réponse (code de statut HTTP correct)
+
+RÈGLES ZOD
+  → z.string().uuid() sur chaque paramètre ID
+  → z.string().min(1).max(N).trim() sur chaque chaîne saisie par l'utilisateur
+  → safeParse — retourner 422 avec error.flatten() en cas d'échec de validation
+  → request.json().catch(() => null) — toujours défensif sur le parsing du body
+
+CODES DE STATUT HTTP
+  → POST créant une ressource  → 201 (pas 200)
+  → DELETE                     → 204 (pas 200)
+  → Échec de validation Zod    → 422 (pas 400)
+  → Non-membre                 → 403 (pas 404 — ne pas révéler l'existence de la ressource)
+```
+
+**Output gate**
+```
+Requis :
+  ✅ Toutes les routes déclarées dans le Technical Design sont implémentées
+  ✅ Schémas Zod créés : src/lib/validations/[domaine].ts
+  ✅ Chaîne de sécurité complète sur chaque route (validation → auth → membership → DB → réponse)
+  ✅ next build passe — pas d'erreurs TypeScript, pas d'erreurs ESLint
+  ✅ SERVICE_ROLE_KEY absente du bundle client
+  ✅ Signal SYNC B émis vers FE
+```
+
+**Format du signal SYNC B**
+```
+BE → FE  |  SYNC B  |  Story [ID]
+────────────────────────────────────────────────────────────────
+Contrat API implémenté comme spécifié dans le Technical Design.
+Routes disponibles :
+  GET   /api/v1/[res]?householdId=UUID → [Type][] (200)
+  POST  /api/v1/[res]                  → [Type] (201)
+  PATCH /api/v1/[res]/:id              → [Type] (200)
+Schémas Zod : src/lib/validations/[domaine].ts
+Build : next build ✅
+────────────────────────────────────────────────────────────────
+Les hooks FE peuvent maintenant se connecter aux vraies routes API.
+```
+
+**Règles d'exécution**
+```
+→ L'implémentation ne commence qu'après réception de SYNC A — pas avant
+→ household_id est toujours lu depuis la DB pour les opérations PATCH/DELETE
+  Jamais depuis le body de la requête — le client ne doit pas contrôler cette valeur
+→ Si une route requise n'est pas dans le Technical Design : signaler au SM
+  Ne pas ajouter de routes silencieusement — cela change le contrat
+→ Vérification SERVICE_ROLE_KEY en CI :
+  grep -r "SUPABASE_SERVICE_ROLE" .next/static/ doit retourner zéro résultat
+```
+
+---
+
+### Étape 09 — Frontend Implementation
+
+**Responsable** : Frontend Developer
+
+**Input gate**
+```
+Requis :
+  ✅ Specs écran UX (Étape 05)
+  ✅ Technical Design — Contrats de composants (Étape 06)
+  ✅ SYNC A reçu — types TypeScript disponibles
+  ✅ SYNC B reçu — contrat API disponible (requis avant que les hooks se connectent)
+
+Note : FE peut construire les composants et états statiques avant SYNC B.
+       Les hooks qui appellent des routes API nécessitent SYNC B avant la connexion.
+```
+
+**Processus**
+```
+COMPOSANTS
+  → Implémenter chaque composant déclaré dans les contrats du Technical Design
+  → Implémenter les 5 états pour chaque écran : loading · vide · nominal · erreur · succès
+  → Appliquer les classes Tailwind de la spec UX — utiliser cn() pour les variantes conditionnelles
+  → Zones de tap ≥ 44×44px sur tous les éléments interactifs
+
+CUSTOM HOOKS
+  → Un hook par domaine métier : useTasks, useShopping, useHousehold
+  → Pattern optimistic update sur les mutations fréquentes (toggle, marquer acheté) :
+      1. Mettre à jour l'état local immédiatement
+      2. Appeler l'API en arrière-plan
+      3. En cas d'erreur : rollback à l'état précédent + propager l'erreur pour un toast
+
+ACCESSIBILITÉ
+  → focus-visible:ring-2 sur tous les éléments focusables
+  → aria-label sur tous les boutons dont le texte visible est insuffisant
+  → motion-reduce:transition-none sur toutes les animations
+  → Focus trap dans les drawers et modales
+```
+
+**Output gate**
+```
+Requis :
+  ✅ Tous les composants du Technical Design implémentés avec les 5 états
+  ✅ Custom hooks avec optimistic update + rollback (pour les CA applicables)
+  ✅ Pages assemblées dans src/app/(app)/[route]/page.tsx
+  ✅ next build passe — pas d'erreurs TypeScript
+  ✅ Pas de types any, pas de casts as non justifiés
+  ✅ Vérifié sur viewport 375px (Chrome DevTools)
+  ✅ pb-safe appliqué sur les éléments en bas d'écran
+  ✅ Zones de tap vérifiées ≥ 44×44px
+  ✅ aria-labels présents sur les boutons icônes uniquement
+```
+
+**Règles d'exécution**
+```
+→ La spec écran UX est la source de vérité — les déviations nécessitent
+  que l'Orchestrateur relance l'Étape 05, pas que FE interprète librement
+→ Si un comportement de spec est techniquement irréalisable tel que décrit :
+  signaler à l'Orchestrateur avant de dévier — ne pas s'auto-interpréter
+→ Les états vides sont obligatoires — pas d'écran blanc pendant le chargement,
+  pas de liste vide sans contexte
+→ Les messages d'erreur sont en langage humain — ne jamais exposer les codes HTTP aux utilisateurs
+→ Le rollback en cas d'échec d'optimistic update doit restaurer l'état précédent exact
+```
+
+---
+
+### Étape 10 — Testing
+
+**Responsable** : Testing Developer (10A) · Infrastructure Developer (10B) — en parallèle
+
+**Input gate (les deux)**
+```
+Requis :
+  ✅ Tous les composants et hooks FE complets (Étape 09)
+  ✅ Toutes les routes API BE complètes (Étape 08)
+  ✅ Migration DB + policies RLS appliquées localement (Étape 07)
+  ✅ Document Technical Design (Étape 06) — pour la préparation des fixtures de test
+```
+
+#### Étape 10A — Testing Developer
+
+**Processus**
+```
+Tests unitaires (composants, hooks, schémas Zod) :
+  → Un fichier de test par composant, un par hook, un par schéma de validation
+  → Chaque CA couvert par au moins un test
+  → Structure par test : validation params → auth (401) → isolation (403) → nominal
+
+Tests d'intégration (routes API) :
+  → Niveaux : validation params (400/422) · auth (401) · autorisation (403) · nominal (200/201)
+  → Au minimum : un test par méthode HTTP par route
+
+Tests d'isolation RLS (SQL) :
+  → Requis pour chaque story touchant des données FOYER / TASK / SHOP
+  → Vérifier : l'utilisateur A ne peut pas SELECT, UPDATE, INSERT, DELETE
+    dans les données du foyer de l'utilisateur B
+  → Un échec RLS est un bug P1 — pipeline suspendu, SM notifié immédiatement
+
+Couverture :
+  → Exécuter npm run test:coverage — seuil ≥ 70% sur branches, functions, lines, statements
+```
+
+**Output gate (10A)**
+```
+Requis :
+  ✅ Suite de tests unitaires verte
+  ✅ Suite de tests d'intégration verte
+  ✅ Tests d'isolation RLS verts (pour les stories household)
+  ✅ Couverture ≥ 70% — rapport npm run test:coverage joint
+  ✅ Chaque CA a au moins un test automatisé
+```
+
+#### Étape 10B — Infrastructure Developer
+
+**Processus**
+```
+  1. Vérifier que le pipeline CI passe : type-check → lint → tests → build
+  2. Appliquer la migration sur l'environnement preview :
+     supabase db push --db-url $SUPABASE_DB_URL_PREVIEW
+  3. Déployer le preview via Vercel :
+     Automatique sur PR, ou déclenchement manuel si nécessaire
+  4. Vérifier le health check sur le preview : GET /api/health → 200
+  5. Vérifier que SERVICE_ROLE_KEY est absente du bundle preview
+```
+
+**Output gate (10B)**
+```
+Requis :
+  ✅ Pipeline CI vert (toutes les vérifications passantes)
+  ✅ Migration appliquée sur l'environnement preview sans erreur
+  ✅ URL preview accessible
+  ✅ /api/health retourne 200 sur le preview
+  ✅ SERVICE_ROLE_KEY absente du bundle preview
+```
+
+**Format du signal SYNC C (émis quand 10A ET 10B sont Done)**
+```
+TEST + INFRA → QA  |  SYNC C  |  Story [ID]
+────────────────────────────────────────────────────────────────
+Suite de tests  : [N] tests passants — couverture [X]%
+Tests RLS       : PASSÉ / NON APPLICABLE
+URL Preview     : https://foyerapp-[slug].vercel.app
+Pipeline CI     : PASSÉ
+Migrations      : Appliquées sur le preview
+Health check    : /api/health → 200
+────────────────────────────────────────────────────────────────
+QA peut maintenant commencer la validation.
+```
+
+**Règles d'exécution**
+```
+→ SYNC C ne doit pas être émis tant que les outputs 10A ET 10B ne sont pas complets
+→ Un test RLS échouant est un P1 — signaler SM immédiatement, ne pas tenter de contournement
+→ TEST et INFRA travaillent en parallèle — ils n'attendent pas l'autre pour commencer
+→ INFRA doit appliquer les migrations sur le preview AVANT de notifier QA
+→ Si CI échoue : INFRA identifie l'étape défaillante et route vers l'agent responsable
+  (échec type-check → FE ou BE, échec tests → TEST, échec build → FE ou BE ou INFRA)
+```
+
+---
+
+### Étape 11 — Validation QA
+
+**Responsable** : QA Engineer
+
+**Input gate**
+```
+Requis :
+  ✅ SYNC C reçu — URL preview + résultats tests + migrations confirmées
+  ✅ Story complète + texte exact des CA (Étape 02)
+  ✅ Specs écran UX (Étape 05)
+  ✅ testing_quality.md §5.3 — checklists de validation par module
+```
+
+**Processus**
+```
+VÉRIFICATION DES PRÉREQUIS (avant de commencer)
+  → next build vert (confirmé par CI)
+  → URL preview accessible et /api/health → 200
+  → Suite de tests automatisés verte
+  Si un prérequis échoue : signaler à l'agent responsable, suspendre la validation QA
+
+VALIDATION PAR CA
+  → Tester chaque CA individuellement — Passé ✅ ou Échoué ❌
+  → Copier le texte exact du CA dans le rapport — jamais paraphraser
+  → Un seul CA en échec suffit pour rejeter la story
+
+VÉRIFICATIONS MANUELLES OBLIGATOIRES
+  → Mobile 375px : Chrome DevTools, profil iPhone SE
+  → Erreur réseau : DevTools → Network → Offline pendant une action de mutation
+  → Navigation clavier : Tab, Shift+Tab, Entrée, Échap sur les formulaires et modales
+  → Messages d'erreur : vérifier role="alert" ou aria-live sur les éléments d'erreur inline
+  → Multi-tenant : tenter d'accéder aux données d'un autre foyer → 403 attendu
+
+VÉRIFICATION DE RÉGRESSION
+  → Exécuter la suite complète contre la branche feature
+  → Toute régression = bug séparé, entrée BUG-N séparée
+```
+
+**Output gate**
+```
+Requis :
+  ✅ Rapport de validation au format standard (QA.md §4.1)
+  ✅ Chaque CA documenté : Passé ✅ ou Échoué ❌
+  ✅ Toutes les vérifications manuelles documentées
+  ✅ Vérification de régression documentée
+  ✅ Tous les bugs documentés avec étapes de reproduction complètes
+  ✅ Verdict explicite : "Prêt pour Sprint Review" ou "Rejeté — [raison]"
+```
+
+**Format du Rapport de Validation**
+```markdown
+## Rapport de Validation — [ID Story] — [Titre]
+
+Date     : YYYY-MM-DD
+Preview  : https://foyerapp-[slug].vercel.app
+Build    : ✅ Passant
+Verdict  : ✅ Prêt pour Sprint Review | ❌ Rejeté
+
+### Critères d'acceptation
+
+| # | Critère (texte exact) | Résultat | Notes |
+|---|----------------------|---------|-------|
+| CA-1 | [texte] | ✅ Passé | — |
+| CA-2 | [texte] | ❌ Échoué | [description précise] |
+
+### Tests automatisés
+
+| Suite | Total | Passé | Échoué | Couverture |
+|-------|-------|-------|--------|------------|
+| Composants | [N] | [N] | [N] | [X]% |
+| Routes API | [N] | [N] | [N] | — |
+| RLS | [N] | [N] | [N] | — |
+
+### Vérifications manuelles
+
+- [ ] Mobile 375px
+- [ ] Réseau offline pendant [action]
+- [ ] Navigation clavier
+- [ ] Messages d'erreur annoncés (role="alert")
+- [ ] Isolation multi-tenant : [ID foyer testé] → 403
+
+### Régression
+
+Suite complète : ✅ Aucune régression | ❌ Régression — [BUG-N]
+
+### Bugs
+
+| ID | Sévérité | Titre | CA violé |
+|----|----------|-------|----------|
+| BUG-N | P[1–4] | [titre] | CA-N |
+
+### Verdict final
+
+✅ Prêt pour Sprint Review — tous les CA passent, aucune régression.
+```
+
+**Sévérité des bugs**
+```
+P1 Bloquant  : Faille d'isolation des données, fonctionnalité principale cassée
+               Pipeline suspendu — signaler SM immédiatement
+P2 Majeur    : Feedback d'erreur manquant, rollback cassé, loading infini
+               La story ne peut pas avancer vers Sprint Review
+P3 Mineur    : Fonctionnel avec contournement — acceptable pour la Review avec entrée backlog
+P4 Cosmétique : Visuel uniquement, aucun impact fonctionnel — idem
+```
+
+**Règles d'exécution**
+```
+→ "Prêt pour Sprint Review" uniquement si TOUS les CA passent + aucun bug P1 ou P2 + aucune régression
+→ "Rejeté" si même un CA échoue ou un bug P1/P2 existe
+→ QA ne corrige pas le code — QA documente les bugs et signale l'agent responsable
+→ Bug P1 : signaler SM immédiatement — ne pas attendre la fin du rapport
+→ Si un bug est causé par une ambiguïté de spec UX : QA le signale comme problème UX
+  L'Orchestrateur relance l'Étape 05 après le correctif — pas seulement l'Étape 08 ou 09
+→ Sur "Rejeté" : l'Orchestrateur route le bug vers l'agent responsable
+  et relance uniquement les étapes impactées avant de retourner à QA
+```
+
+---
+
+### Étape 12 — Story Done
+
+**Responsable** : Product Owner (verdict) · Scrum Master (facilitation) · tous agents (participants)
+
+**Input gate**
+```
+Requis :
+  ✅ Rapport de validation QA avec verdict "Prêt pour Sprint Review"
+  ✅ Toutes les PRs mergées (ou prêtes à merger sur Accepté par le PO)
+  ✅ Métriques sprint préparées par TEST : vélocité, taux d'acceptance, couverture
+```
+
+**Processus**
+```
+Le SM facilite la Sprint Review :
+
+  1. Chaque membre de la Dev Team démontre le comportement implémenté contre chaque CA
+     (pas de slideshows — démo en direct sur l'URL preview)
+  2. Le PO évalue chaque story contre les CA originaux
+  3. Le PO prononce un verdict par story : Accepté ✅ ou Rejeté ❌
+
+CRITÈRES D'ACCEPTANCE DU PO
+  → Le PO ne peut accepter que si TOUS les CA sont vérifiés (le rapport QA le confirme)
+  → Le PO peut rejeter même si QA a validé — si le comportement livré ne correspond pas
+    à l'intention du PO (ambiguïté de CA découverte à la démo)
+  → La raison du rejet doit être spécifique : quel CA, ce qui était attendu vs observé
+```
+
+**Output gate**
+```
+Requis :
+  ✅ Verdict PO pour chaque story : Accepté ✅ ou Rejeté ❌
+  ✅ Rapport de Sprint Review (vélocité, taux d'acceptance, métriques qualité)
+  ✅ Backlog mis à jour : stories Acceptées → Done, Rejetées → Backlog avec note de correction
+  ✅ Rétrospective planifiée
+```
+
+**Règles d'exécution**
+```
+→ Les points de story ne comptent dans la vélocité que pour les stories Acceptées
+   Pas de points partiels — une story est livrée ou elle ne l'est pas
+→ Les stories Rejetées retournent au Backlog avec une story de correction créée
+→ Le SM enregistre la vélocité pour le calibrage du prochain Sprint Planning
+→ La Sprint Review se clôt uniquement après que toutes les stories ont reçu un verdict PO
+→ Le SM facilite — le SM ne vote pas sur l'acceptance
+```
+
+---
+
+## 5. Règles d'exécution (Execution Rules)
+
+Ces règles définissent les **execution gates** qui empêchent les agents de travailler dans le désordre.
+
+### Règle 1 — Disponibilité des inputs
+
+> Un rôle ne peut agir que si ses inputs sont disponibles.
+
+```
+Application :
+  L'Orchestrateur vérifie chaque Input Gate avant d'activer un agent.
+  Si un input est manquant : l'Orchestrateur N'active PAS l'agent.
+  À la place, il identifie quelle étape précédente doit se terminer et attend.
+
+Exemple :
+  L'Étape 08 (BE) ne peut pas démarrer tant que SYNC A n'est pas reçu depuis DB (Étape 07).
+  Si SYNC A n'a pas été émis : l'Orchestrateur maintient l'Étape 08 en attente et signale DB.
+```
+
+### Règle 2 — Output formalisé
+
+> Chaque étape doit produire un output formalisé. La confirmation verbale est insuffisante. L'output doit exister sous forme de document écrit et structuré.
+
+```
+Application :
+  Avant d'avancer le pipeline, l'Orchestrateur vérifie que chaque élément
+  de la checklist Output Gate est présent.
+  Éléments manquants → étape non marquée Done → pipeline ne progresse pas.
+
+Exemple :
+  L'Étape 06 (Technical Design) n'est pas Done tant que le document ne contient pas
+  les 4 sections avec les validations explicites de BE, FE et DB.
+  Affirmer "nous nous sommes mis d'accord verbalement" ne satisfait pas la gate.
+```
+
+### Règle 3 — Application séquentielle des gates
+
+> L'étape suivante ne peut commencer que si l'output précédent est validé.
+
+```
+Application :
+  L'Orchestrateur maintient un statut d'étape (En attente / Actif / Done / Bloqué).
+  Une étape passe à Done uniquement quand son Output Gate est vérifié.
+  L'étape suivante passe à Actif uniquement quand son Input Gate est satisfait.
+
+Exception :
+  Les fenêtres de parallélisme déclarées (Étapes 07 + 08 + 09, Étapes 10A + 10B)
+  sont explicitement définies dans le pipeline. Le parallélisme en dehors de ces
+  fenêtres déclarées n'est pas autorisé.
+```
+
+### Règle 4 — Respect explicite des dépendances
+
+> Les dépendances doivent être explicitement respectées. L'Orchestrateur les applique mécaniquement. Aucune dépendance implicite ou supposée n'est reconnue.
+
+```
+Application :
+  La carte de dépendances de l'Orchestrateur est la source de vérité unique.
+  Un agent qui affirme avoir besoin d'un input non listé dans son Input Gate
+  doit remonter le problème au SM — l'Orchestrateur n'ajoute pas
+  des dépendances non déclarées à la volée.
+
+Exception :
+  Si une dépendance non déclarée est genuinement découverte lors de l'Analyse Technique
+  (Étape 03), elle est documentée dans le Rapport d'Analyse Technique
+  et formellement ajoutée au pipeline avant le Sprint Planning.
+```
+
+### Règle 5 — Immutabilité des outputs
+
+> Les rôles ne peuvent pas modifier le travail des autres rôles sauf si l'orchestrateur relance l'étape.
+
+```
+Application :
+  Si un agent aval identifie un problème dans l'output d'une étape précédente :
+    → L'agent signale l'Orchestrateur
+    → L'Orchestrateur relance l'étape productrice avec le problème noté
+    → L'agent producteur corrige son output
+    → L'Orchestrateur re-valide l'output
+    → Le pipeline reprend depuis cette étape vers l'aval
+
+  L'agent aval ne modifie PAS l'output précédent.
+  L'Orchestrateur ne patche PAS l'output précédent.
+
+Exemple :
+  Si BE (Étape 08) découvre que la migration DB (Étape 07) manque d'une colonne :
+    → BE signale l'Orchestrateur
+    → L'Orchestrateur relance l'Étape 07 avec le problème spécifié
+    → DB ajoute la colonne et ré-émet SYNC A
+    → L'Étape 08 redémarre avec les types corrigés
+```
+
+---
+
+## 6. Gestion des erreurs (Error Handling)
+
+### 6.1 Taxonomie des erreurs
+
+```
+E1 — Output manquant
+     Une étape ne peut pas être marquée Done car un output requis est absent.
+
+E2 — Erreur technique
+     Le processus d'un agent échoue à cause d'un problème technique
+     (échec de build, erreur de migration, échec CI, erreur de déploiement).
+
+E3 — Dépendance non satisfaite
+     L'Input Gate d'une étape ne peut pas être satisfait car une étape précédente
+     est bloquée ou son output n'est pas encore disponible.
+
+E4 — Validation QA échouée
+     Le rapport de Validation QA contient un verdict "Rejeté"
+     (un ou plusieurs CA échouent, ou un bug P1/P2 est trouvé).
+
+E5 — Désaccord entre agents
+     Deux agents ne peuvent pas atteindre l'accord requis pour produire un output conjoint
+     (le plus souvent : désaccord sur le contrat API à l'Étape 06).
+
+E6 — Escalade de blocage
+     Un blocage reste non résolu après un cycle de relance.
+```
+
+### 6.2 Procédure de résolution par type d'erreur
+
+#### E1 — Output manquant
+
+```
+Détection  : L'Orchestrateur vérifie l'Output Gate — élément non présent
+Action     : L'Orchestrateur envoie un prompt ciblé à l'agent responsable
+             spécifiant exactement quel élément d'output est manquant
+Relance    : L'agent produit l'élément manquant et signale l'Orchestrateur
+Escalade   : Si manquant après une relance → E6 (escalade de blocage)
+Pipeline   : Suspendu à l'étape courante — ne progresse pas
+```
+
+#### E2 — Erreur technique
+
+```
+Détection  : L'agent signale l'erreur (échec de build, erreur de migration, etc.)
+             ou l'Orchestrateur la détecte lors de la vérification de l'Output Gate
+Action     : L'Orchestrateur identifie la cause racine et route vers l'agent responsable
+Relance    : L'agent responsable corrige et ré-exécute
+Escalade   : Si non résolu après une relance → E6
+Pipeline   : Suspendu à l'étape défaillante — les étapes parallèles dépendant
+             de l'output de l'étape défaillante sont également suspendues
+
+Matrice de routing — erreurs techniques :
+
+  Type d'erreur                       Agent responsable   Action
+  ─────────────────────────────────── ─────────────────   ──────────────────────────────
+  Erreur TypeScript dans next build   FE ou BE            Corriger les erreurs de type
+  Échec ESLint                        FE ou BE            Corriger les erreurs de lint
+  Échec tests unitaires               FE/BE (code) ou     Corriger le code ou la fixture
+                                      TEST (fixture)
+  Échec tests d'intégration           BE (logique route)  Identifier et corriger
+                                      ou TEST (test)
+  Échec test isolation RLS            DB                  Corriger les policies — P1, signal SM
+  Migration échoue localement         DB                  Corriger le SQL, relancer supabase db push
+  Échec pipeline CI                   INFRA               Diagnostiquer logs, router vers agent
+  Échec déploiement preview           INFRA               Vérifier logs Vercel, corriger config
+  Health check échoue sur preview     INFRA + BE + DB     Diagnostiquer ensemble
+```
+
+#### E3 — Dépendance non satisfaite
+
+```
+Détection  : L'Orchestrateur vérifie l'Input Gate — input requis non disponible
+Action     : L'Orchestrateur identifie quelle étape précédente doit produire l'input
+             et signale cette étape pour qu'elle se complète
+Pipeline   : L'étape dépendante reste En attente — ne démarre pas
+             Les autres étapes indépendantes peuvent continuer si elles sont dans une
+             fenêtre de parallélisme déclarée
+Exemple    : L'Étape 08 (BE) ne peut pas démarrer — SYNC A non encore émis
+             L'Orchestrateur signale DB : "SYNC A requis pour que l'Étape 08 démarre"
+```
+
+#### E4 — Validation QA échouée
+
+```
+Détection  : Le rapport de Validation QA contient un verdict "Rejeté"
+Action     : L'Orchestrateur lit le rapport et route chaque bug vers
+             l'agent responsable de l'étape impactée
+
+Tableau de routing sur rejet :
+
+  Type de bug                          Étape relancée    Agent notifié
+  ──────────────────────────────────── ──────────────    ─────────────────
+  État de composant manquant           Étape 09          FE
+  Rollback optimistic cassé            Étape 09          FE
+  API retourne mauvais code HTTP       Étape 08          BE
+  403 non retourné pour non-membre     Étape 08          BE
+  RLS autorise accès cross-household   Étape 07          DB — P1
+  État spec écran non implémenté       Étape 09          FE
+  Écran dévie de la spec UX            Étape 05          UX — puis Étape 09
+  Navigation clavier cassée            Étape 09          FE
+  Régression sur story précédente      Étape causante     Agent responsable
+
+Re-validation :
+  Après correctif : l'Orchestrateur relance l'Étape 10 (Testing)
+                    puis relance l'Étape 11 (Validation QA) depuis le début
+  QA ne reprend pas — QA re-valide la story complète contre tous les CA
+
+Bug P1 :
+  L'Orchestrateur signale SM immédiatement (pas en fin de cycle)
+  Pipeline suspendu jusqu'à résolution et re-validation du P1
+```
+
+#### E5 — Désaccord entre agents
+
+```
+Détection  : L'étape de production conjointe (Étape 06 Technical Design) est bloquée —
+             les agents ne peuvent pas signer
+Action     : L'Orchestrateur escalade au SM
+             Le SM facilite une session de résolution (un cycle maximum)
+             Le SM n'impose pas de décision technique — le SM facilite le processus
+             Si les agents sont toujours en désaccord : le PO est l'arbitre sur le
+             comportement produit, la Dev Team est l'autorité sur l'implémentation technique
+Pipeline   : Suspendu à l'Étape 06 jusqu'à obtention de la signature
+```
+
+#### E6 — Escalade de blocage
+
+```
+Déclencheur : Tout type d'erreur non résolu après un cycle de relance
+Action      : L'Orchestrateur génère un rapport de blocage et l'envoie au SM
+
+Format du rapport de blocage :
+  Story       : [ID]
+  Étape       : [N] — [Nom]
+  Agent       : [Rôle]
+  Type erreur : E[1–5]
+  Description : [Description précise de ce qui manque ou échoue]
+  Impact      : [Sprint Goal à risque / autres stories bloquées]
+  Actions tentées : [Ce qui a été essayé]
+  Résolution requise avant : [Prochain Daily]
+
+Réponse SM :
+  Le SM décide : relancer avec guidance supplémentaire / débloquer dépendance /
+                 escalader au PO / déplacer la story au sprint suivant (circuit breaker)
+Pipeline    : Reste suspendu jusqu'à confirmation de résolution par le SM
+```
+
+### 6.3 Circuit breaker
+
+```
+Une story est retirée du sprint actif et retourne au Backlog si :
+
+  → La même étape échoue 3 fois consécutives après des relances dirigées par l'Orchestrateur
+  → Un bug P1 (échec d'isolation RLS) n'est pas résolu dans les 4 heures
+  → Une dépendance requise ne peut pas être satisfaite dans ce sprint
+  → Le PO révise significativement les CA après l'Étape 07 (migration déjà appliquée)
+  → L'Étape 06 (Technical Design) ne peut pas atteindre la signature dans une journée de sprint
+
+Action circuit breaker :
+  1. L'Orchestrateur signale au SM : "Circuit breaker — Story [ID] — [raison]"
+  2. Le SM notifie le PO
+  3. La story retourne au BACKLOG avec statut BLOQUÉ et cause documentée
+  4. L'Orchestrateur passe à la prochaine story READY dans le Sprint Backlog
+  5. La cause racine est ajoutée à l'agenda de Rétrospective
+```
+
+---
+
+## 7. Journal d'état
+
+L'Orchestrateur maintient un journal d'état en temps réel pour chaque story dans le pipeline.
 
 ```markdown
-## Journal — Story [ID] — [Titre]
+## Journal d'état — Story [ID] — [Titre]
 
-| Étape | Agent | Statut | Date | Notes |
-|---|---|---|---|---|
-| 1 — Analyse | Orchestrateur | ✅ Done | 2026-03-04 | — |
-| 2 — PO Validation | PO | ✅ Done | 2026-03-04 | CA-3 révisé |
-| 3 — Planification | SM | ✅ Done | 2026-03-04 | 10 tâches, SYNC A prévu |
-| 4 — UX Design | UX | ✅ Done | 2026-03-04 | 2 fiches écrans |
-| 5 — DB | DB | ✅ Done | 2026-03-04 | SYNC A émis |
-| 6 — Backend | BE | 🔄 In Progress | 2026-03-04 | — |
-| 7 — Frontend | FE | 🔄 In Progress | 2026-03-04 | Attente SYNC B |
-| 8 — Tests | TEST + INFRA | ⏳ Waiting | — | — |
-| 9 — QA | QA | ⏳ Waiting | — | — |
+Sprint : [N]
+Statut : EN_COURS | BLOQUÉ | DONE | REJETÉ
 
-Blocages actifs : Aucun
-Dernière mise à jour : 2026-03-04 14h30
+| Étape | Nom | Agent(s) | Statut | Démarré | Terminé | Notes |
+|-------|-----|----------|--------|---------|---------|-------|
+| 01 | Story Received | ORCH | ✅ Done | 03-04 09:00 | 03-04 09:15 | — |
+| 02 | Clarification PO | PO | ✅ Done | 03-04 09:15 | 03-04 10:00 | CA-3 révisé |
+| 03 | Analyse Technique | FE+BE+DB+TEST | ✅ Done | 03-04 10:00 | 03-04 11:30 | Risque : Realtime |
+| 04 | Sprint Planning | SM (facilite) | ✅ Done | 03-04 11:30 | 03-04 12:00 | 11 tâches |
+| 05 | UX Design | UX | ✅ Done | 03-04 14:00 | 03-04 15:30 | 2 specs écrans |
+| 06 | Technical Design | FE+BE+DB | ✅ Done | 03-04 15:30 | 03-04 16:30 | Signé |
+| 07 | Database Design | DB | ✅ Done | 03-05 09:00 | 03-05 10:00 | SYNC A émis |
+| 08 | Backend Impl. | BE | 🔄 Actif | 03-05 10:00 | — | SYNC B en attente |
+| 09 | Frontend Impl. | FE | 🔄 Actif | 03-05 10:00 | — | Composants OK, hooks attendent SYNC B |
+| 10 | Testing | TEST+INFRA | ⏳ En attente | — | — | — |
+| 11 | Validation QA | QA | ⏳ En attente | — | — | — |
+| 12 | Story Done | PO | ⏳ En attente | — | — | — |
+
+Blocages actifs  : Aucun
+Dernière mise à jour : 2026-03-05 10:30
+```
+
+**Définitions des statuts**
+```
+⏳ En attente  — Input Gate non encore satisfait, étape non démarrée
+🔄 Actif       — L'agent travaille actuellement sur cette étape
+⛔ Bloqué      — Input Gate satisfait mais étape bloquée (erreur ou dépendance)
+✅ Done        — Output Gate entièrement vérifié
+❌ Échoué      — L'étape a produit un output incorrect, correction en cours
 ```
 
 ---
 
-## 5. Gestion des dépendances
+## 8. Référence agents
 
-### 5.1 Types de dépendances
-
-```
-Type A — Dépendance de story (inter-stories)
-  Définition : Story B nécessite que Story A soit Done pour démarrer
-  Détection  : Étape 1 (analyse) + Étape 3 (planification SM)
-  Règle      : Story ne peut pas passer en IN PROGRESS si dépendance non Done
-  Exemple    : TASK-01 dépend de FOYER-01 (le foyer doit exister)
-
-Type B — Dépendance de tâche (intra-story)
-  Définition : Tâche T7 (tests FE) nécessite T5 (composants) Done
-  Détection  : Étape 3 (décomposition SM)
-  Règle      : Plan de tâches liste les dépendances explicitement
-  Exemple    : Hook useTasks (T6) dépend du contrat API Backend (T2)
-
-Type C — Dépendance de sync point
-  Définition : L'agent X attend le signal de l'agent Y avant de continuer
-  Détection  : Règles de parallélisme (§4.3)
-  Règle      : L'Orchestrateur ne débloque pas l'étape suivante sans le signal
-  Exemple    : FE attend SYNC B (contrat API) pour connecter les hooks
-```
-
-### 5.2 Matrice de dépendances inter-stories (MVP FoyerApp)
+### Prompt d'initialisation de l'Orchestrateur
 
 ```
-AUTH-01 (Inscription)     ← Aucune dépendance
-AUTH-02 (Connexion)       ← Aucune dépendance
-AUTH-03 (Session)         ← AUTH-01, AUTH-02
-FOYER-01 (Créer foyer)    ← AUTH-01
-FOYER-02 (Rejoindre)      ← AUTH-01, FOYER-01
-FOYER-03 (Code invitation) ← FOYER-01
-TASK-01 (Créer tâche)     ← FOYER-01
-TASK-04 (Compléter tâche) ← TASK-01
-SHOP-01 (Ajouter article) ← FOYER-01
-SHOP-02 (Marquer acheté)  ← SHOP-01
-HOME-01 (Résumé accueil)  ← FOYER-01, TASK-01, SHOP-01
-HOME-02 (Navigation)      ← AUTH-01
+Tu es l'Orchestrateur AI Scrum pour FoyerApp.
 
-Règle : L'Orchestrateur vérifie cette matrice à l'Étape 1 de chaque story.
-        Si une dépendance n'est pas Done → signal SM → story mise en attente.
-```
-
-### 5.3 Résolution d'une dépendance bloquante
-
-```
-DÉTECTION
-  L'Orchestrateur identifie en Étape 1 que la story [B] dépend de [A]
-  et que [A] n'est pas Done.
-
-SIGNAL
-  "[ORCHESTRATEUR → SM] Story [B] bloquée — dépendance [A] non Done.
-   Option 1 : Prioriser [A] dans le sprint courant
-   Option 2 : Reporter [B] au sprint suivant
-   Décision attendue du PO"
-
-DÉCISION PO
-  PO décide entre les options — SM met à jour le sprint backlog
-
-RÉSOLUTION
-  Si Option 1 : L'Orchestrateur traite [A] en priorité, puis [B]
-  Si Option 2 : [B] reste BACKLOG, l'Orchestrateur continue avec d'autres stories
-```
-
----
-
-## 6. Gestion des erreurs
-
-### 6.1 Catalogue des erreurs par étape
-
-```
-ÉTAPE 1 — ANALYSE
-  E1.1 : Story incomplète (CA manquants, pas de DoD)
-    → Action : Question précise au PO (1 question, options si possible)
-    → Résolution attendue : dans le cycle courant
-
-  E1.2 : Story trop grande (> 8 points)
-    → Action : Signal PO + SM avec proposition de décomposition
-    → Résolution attendue : PO crée les sous-stories + repriorise
-
-  E1.3 : Dépendance non résolue
-    → Action : Signal SM → décision PO (prioriser / reporter)
-    → Résolution : avant de continuer l'Étape 1
-
-ÉTAPE 2 — VALIDATION PO
-  E2.1 : CA non conformes (implémentation plutôt que comportement)
-    → Action : PO révise les CA
-    → Retour : Étape 1 (re-analyse avec CA révisés)
-
-  E2.2 : PO non disponible (timeout > 1 cycle)
-    → Action : Signal SM — story mise en attente, autre story traitée
-
-ÉTAPES 4-7 — CONCEPTION + IMPLÉMENTATION
-  E4.1 : Ambiguïté UX non levée
-    → Action : UX pose 1 question au PO via Orchestrateur
-    → Story suspendue à l'Étape 4 jusqu'à réponse
-
-  E5.1 : Migration échoue localement
-    → Action : DB corrige et reteste — signal Orchestrateur quand résolu
-    → Étape 6 et 7 ne démarrent pas tant que E5 n'est pas Done
-
-  E6.1 : next build cassé côté Backend
-    → Action : BE corrige — signal quand build passe
-    → Étape 7 ne peut pas finir sa connexion sans SYNC B
-
-  E7.1 : next build cassé côté Frontend
-    → Action : FE corrige — signal quand build passe
-    → Étape 8 ne démarre pas
-
-ÉTAPE 8 — TESTS
-  E8.1 : Tests échouants (non liés aux CA)
-    → Action : TEST identifie l'agent responsable du fix → signal ciblé
-    → Dev concerné corrige → TEST ré-exécute
-
-  E8.2 : CI pipeline cassé (GitHub Actions)
-    → Action : INFRA diagnostique + corrige
-    → Signal immédiat au SM si durée > 30 min
-
-  E8.3 : Preview deployment inaccessible
-    → Action : INFRA vérifie les logs Vercel + migration
-    → Signal au SM si non résolu dans le cycle
-
-ÉTAPE 9 — VALIDATION QA
-  E9.1 : CA échouant — bug P1 ou P2
-    → Action : QA produit la fiche de bug complète
-    → Orchestrateur retourne à l'étape correspondante :
-       Bug UI/composant → Étape 7 (FE corrige)
-       Bug API → Étape 6 (BE corrige)
-       Bug RLS / DB → Étape 5 (DB corrige)
-    → Après correction : re-validation QA (Étape 9 seulement)
-
-  E9.2 : CA échouant — bug P3 ou P4
-    → QA documente le bug dans le backlog
-    → Story peut tout de même être acceptée en Sprint Review
-    → Bug traité au sprint suivant
-
-  E9.3 : Régression détectée
-    → QA ouvre un bug séparé lié à la story précédente
-    → Signal au SM — sprint backlog mis à jour
-```
-
-### 6.2 Arbre de décision — story bloquée
-
-```
-Story bloquée à une étape
-         │
-         ▼
-  Blocage interne ?  (l'agent peut le résoudre seul)
-         │
-    OUI──┤──►  Agent corrige dans le cycle courant → reprend
-         │
-    NON──┤
-         ▼
-  Blocage nécessite un autre agent ?
-         │
-    OUI──┤──►  Orchestrateur envoie un prompt ciblé à l'agent concerné
-         │     Délai attendu : dans le cycle courant
-         │
-    NON──┤
-         ▼
-  Blocage nécessite une décision PO ?
-         │
-    OUI──┤──►  Orchestrateur transmet au PO (1 question précise)
-         │     Si PO ne répond pas dans le cycle → signal SM
-         │
-    NON──┤
-         ▼
-  Blocage systémique (infrastructure, dépendance externe)
-         │
-         ▼
-  Signal SM avec :
-    - Story concernée
-    - Étape bloquée
-    - Description du blocage (cause, impact sur le Sprint Goal)
-    - Action suggérée
-    - Deadline pour décision
-```
-
-### 6.3 Circuit breaker — story abandonnée
-
-```
-Une story est mise en attente et retirée du sprint actif si :
-
-  - La même étape échoue 3 fois de suite sans résolution
-  - Un blocage P1 (isolation RLS cassée) n'est pas résolu en 4h
-  - Une dépendance non résolue rend la story inconstructible dans le sprint
-  - Le PO révise les CA de façon majeure après l'Étape 5 (DB déjà migrée)
-
-Dans ce cas :
-  1. L'Orchestrateur signal au SM : "Story [ID] — Circuit breaker déclenché"
-  2. SM notifie le PO
-  3. Story retourne au backlog avec statut BLOCKED et la cause documentée
-  4. L'Orchestrateur passe à la story suivante du Sprint Backlog
-  5. En Retrospective : cause racine analysée + action préventive créée
-```
-
-### 6.4 Matrice de résolution rapide
-
-| Erreur | Agent responsable | Action | Délai max |
-|---|---|---|---|
-| next build cassé | FE ou BE (selon l'étape) | Corriger TypeScript / ESLint | 1 cycle |
-| Migration SQL échoue | DB | Corriger + re-tester localement | 1 cycle |
-| Tests unitaires rouges | FE ou BE (code) | Corriger le code ou le test | 1 cycle |
-| Tests RLS échouants | DB | Corriger les policies | 1 cycle (P1 = 4h) |
-| Preview inaccessible | INFRA | Diagnostiquer les logs Vercel | 1 cycle |
-| CA ambigu | PO | Clarifier le CA | 1 cycle |
-| Dépendance non Done | SM + PO | Reprioriser le sprint | 1 cycle |
-| Régression introduite | FE ou BE | Fix + re-test complet | 1 cycle |
-| Bug P1 en production | INFRA (rollback) | Rollback Vercel ou migration | < 15 min |
-
----
-
-## Annexe A — Prompt d'initialisation de l'Orchestrateur
-
-Quand l'Orchestrateur est invoqué pour traiter une story :
-
-```
-Tu es l'Orchestrateur du système AI Scrum de FoyerApp.
-
-Ta mission : piloter le développement complet de la story suivante
-en activant les agents dans l'ordre défini dans scrum_orchestrator.md.
+Ton rôle : piloter le pipeline de développement complet pour la User Story ci-dessous.
+Suis le processus défini dans scrum_orchestrator.md exactement.
 
 STORY À TRAITER :
-[Coller la User Story complète avec CA et DoD]
+[Coller la User Story complète + CA + ID Story + points]
 
-RESSOURCES DISPONIBLES :
-- Agents : PO, SM, UX, FE, BE, DB, TEST, INFRA, QA
-- Documents agents : ai/agents/[agent].md
-- Skills techniques : ai/roles/[skill].md
-- Backlog : docs/backlog/ai_scrum_backlog.md
+AGENTS DISPONIBLES :
+  PO, SM, UX, FE, BE, DB, TEST, INFRA, QA
+  Le document de référence de chaque agent est listé en §2.1.
 
-PROCESSUS :
-1. Commence par l'Étape 1 (Analyse)
-2. Suis le flux défini dans scrum_orchestrator.md §3
-3. Pour chaque étape : active l'agent avec son prompt structuré
-4. Vérifie l'output avant de passer à l'étape suivante
-5. Tiens à jour le journal d'état (§4.5)
-6. En cas d'erreur, applique la procédure §6.1
+INSTRUCTIONS :
+  1. Commence par l'Étape 01 (Story Received) — effectue la vérification structurelle
+  2. Suis les étapes du pipeline en séquence
+  3. Applique toutes les execution gates (§5)
+  4. Applique les procédures de gestion des erreurs si nécessaire (§6)
+  5. Maintiens le journal d'état après chaque étape terminée (§7)
+  6. Ne progresse pas dans le pipeline sans un Output Gate vérifié
 
-Commence maintenant par l'Étape 1.
+Commence maintenant par l'Étape 01.
 ```
 
-## Annexe B — Référence des documents agents
+### Référence des documents agents
 
 | Agent | Document | Mission en une phrase |
 |---|---|---|
 | Product Owner | `ai/agents/PO.md` | Maximiser la valeur produit livrée par sprint |
-| Scrum Master | `ai/agents/SM.md` | Organiser le travail et faciliter le processus Scrum |
-| UX Designer | `ai/agents/UX.md` | Garantir que chaque écran est utilisable et accessible |
+| Scrum Master | `ai/agents/SM.md` | Faciliter le processus, supprimer les blocages |
+| UX Designer | `ai/agents/UX.md` | Produire des specs écrans utilisables et accessibles |
 | Frontend Dev | `ai/agents/frontend_dev.md` | Implémenter l'interface utilisateur |
-| Backend Dev | `ai/agents/backend_dev.md` | Implémenter la logique métier et les endpoints |
+| Backend Dev | `ai/agents/backend_dev.md` | Implémenter la logique métier et les endpoints API |
 | Database Dev | `ai/agents/database_dev.md` | Concevoir et maintenir le schéma de base de données |
-| Testing Dev | `ai/agents/testing_dev.md` | Garantir la qualité du code produit |
-| Infra Dev | `ai/agents/infra_dev.md` | Maintenir l'infrastructure et le pipeline de déploiement |
-| QA Engineer | `ai/agents/QA.md` | Vérifier que les User Stories respectent leurs CA |
+| Testing Dev | `ai/agents/testing_dev.md` | Garantir la qualité du code par les tests automatisés |
+| Infra Dev | `ai/agents/infra_dev.md` | Maintenir le pipeline de déploiement |
+| QA Engineer | `ai/agents/QA.md` | Valider les User Stories contre les critères d'acceptation |
+
+### Référence des sync points
+
+| Sync | Émis par | Consommé par | Débloque | Contenu |
+|---|---|---|---|---|
+| SYNC A | DB (Étape 07) | BE + FE | Étapes 08 + 09 | Types TypeScript, statut migration |
+| SYNC B | BE (Étape 08) | FE | Hooks Étape 09 | Contrat API, routes disponibles |
+| SYNC C | TEST + INFRA (Étape 10) | QA | Étape 11 | Résultats tests, URL preview, statut CI |
 
 ---
 
-*Ce document est la référence pour l'agent IA Orchestrateur du système AI Scrum de FoyerApp. Il est mis à jour à chaque évolution significative du processus, de la composition de l'équipe ou des règles de coordination.*
+*Ce document est la référence faisant autorité pour l'Orchestrateur AI Scrum de FoyerApp. Il est mis à jour lorsque le processus, la composition de l'équipe ou les standards qualité changent significativement.*
+ENDOFFILE
